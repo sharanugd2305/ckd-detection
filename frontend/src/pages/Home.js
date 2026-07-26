@@ -122,7 +122,7 @@ export default function Home(){
         }}>
           <span style={{width:7,height:7,borderRadius:'50%',background:'#00E5B4',display:'inline-block',animation:'blink 1.5s ease infinite'}}/>
           <span style={{fontSize:'.78rem',color:'#00E5B4',fontWeight:500,letterSpacing:'.04em'}}>
-            LIVE · Major Project · Data Engineering
+            LIVE
           </span>
         </div>
 
@@ -133,13 +133,12 @@ export default function Home(){
           marginBottom:'1.4rem',
           animation:'fadeUp .5s ease .08s both',
         }}>
-          <span style={{color:'#DCE8FF'}}>Detect Kidney Disease</span><br/>
           <span style={{
             backgroundImage:'linear-gradient(135deg,#2D6AFF 20%,#00E5B4 80%)',
             backgroundSize:'200% 200%',
             WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
             animation:'gradShift 4s ease infinite',
-          }}>Before Symptoms Appear</span>
+          }}>Detect Kidney Disease</span>
         </h1>
 
         <p style={{
