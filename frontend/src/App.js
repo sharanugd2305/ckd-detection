@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Predict from './pages/Predict';
+import Models from './pages/Models';
 import About from './pages/About';
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
       <Routes>
         <Route path="/"        element={<Home />} />
         <Route path="/predict" element={<Predict />} />
+        <Route path="/models"  element={<Models />} />
         <Route path="/about"   element={<About />} />
       </Routes>
     </BrowserRouter>
