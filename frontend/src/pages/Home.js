@@ -112,18 +112,15 @@ export default function Home(){
         <div style={{position:'absolute',top:0,left:'20%',width:500,height:400,background:'radial-gradient(circle,rgba(45,106,255,.07) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
         <div style={{position:'absolute',top:'15%',right:'10%',width:350,height:350,background:'radial-gradient(circle,rgba(0,229,180,.05) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
 
-        {/* Live badge */}
         <div style={{
           display:'inline-flex',alignItems:'center',gap:8,
-          padding:'5px 14px',borderRadius:999,marginBottom:'2.2rem',
+          padding:'5px 14px',borderRadius:999,marginBottom:'1.2rem',
           background:'rgba(45,106,255,.08)',
           border:'1px solid rgba(45,106,255,.2)',
           animation:'fadeUp .4s ease',
         }}>
           <span style={{width:7,height:7,borderRadius:'50%',background:'#00E5B4',display:'inline-block',animation:'blink 1.5s ease infinite'}}/>
-          <span style={{fontSize:'.78rem',color:'#00E5B4',fontWeight:500,letterSpacing:'.04em'}}>
-            LIVE
-          </span>
+          <span style={{fontSize:'.78rem',color:'#00E5B4',fontWeight:500,letterSpacing:'.04em'}}>LIVE</span>
         </div>
 
         <h1 style={{
