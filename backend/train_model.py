@@ -4,7 +4,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTENC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
@@ -27,19 +27,32 @@ TARGET = 'Diagnosis'
 X = df[FEATURES].values
 y = df[TARGET].values
 
-# Scale
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.2,
+# Split BEFORE scaling to avoid test-set leakage
+X_train_raw, X_test_raw, y_train, y_test = train_test_split(
+    X, y, test_size=0.2,
     random_state=42, stratify=y)
 
-# SMOTE
-smote = SMOTE(sampling_strategy=1.0,
-              k_neighbors=5, random_state=42)
+# Scale using TRAINING-ONLY fit statistics
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train_raw)
+X_test = scaler.transform(X_test_raw)
+
+# SMOTENC only on training data to preserve the binary/categorical columns
+categorical_idx = [
+    FEATURES.index('UrinaryTractInfections'),
+    FEATURES.index('FamilyHistoryKidneyDisease'),
+]
+smote = SMOTENC(
+    categorical_features=categorical_idx,
+    sampling_strategy=1.0,
+    k_neighbors=5,
+    random_state=42,
+)
 X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
+
+neg = int((y_train_sm == 0).sum())
+pos = int((y_train_sm == 1).sum())
+scale = neg / pos
 
 MODEL_MAP = {
     'Logistic Regression': LogisticRegression(
@@ -65,6 +78,7 @@ MODEL_MAP = {
         n_estimators=200,
         learning_rate=0.1,
         max_depth=6,
+        scale_pos_weight=scale,
         random_state=42,
         eval_metric='logloss',
     ),
