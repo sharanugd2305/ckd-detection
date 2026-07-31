@@ -1,41 +1,42 @@
 import React,{useState,useEffect,useRef} from 'react';
+import axios from 'axios';
 
-/* ── Model performance data ─────────────────────────────────── */
-const MODELS=[
+/* ── Verified fallback model performance data from the trained notebook summary ─────────────────────────────────── */
+const DEFAULT_MODELS=[
   {
-    name:'Random Forest',short:'RF',
-    accuracy:91.2,precision:90.8,recall:92.1,f1:91.4,auc:96.3,
-    color:'#00E5B4',bg:'rgba(0,229,180,.08)',border:'rgba(0,229,180,.25)',
-    badge:'BEST MODEL',badgeColor:'#00E5B4',
-    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
-    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Best overall performance across all metrics.',
+    name:'XGBoost',short:'XGB',
+    accuracy:84.94,precision:59.43,recall:64.8,f1:61.05,auc:74.72,
+    color:'#9B6DFF',bg:'rgba(155,109,255,.08)',border:'rgba(155,109,255,.25)',
+    badge:'BEST MODEL',badgeColor:'#9B6DFF',
+    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
+    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Macro-averaged F1 best reflects the notebook winner.',
     isBest:true,
   },
   {
-    name:'XGBoost',short:'XGB',
-    accuracy:89.5,precision:88.9,recall:90.2,f1:89.5,auc:95.1,
-    color:'#9B6DFF',bg:'rgba(155,109,255,.08)',border:'rgba(155,109,255,.25)',
-    badge:'2ND PLACE',badgeColor:'#9B6DFF',
-    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
-    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Strong performance with excellent AUC score.',
+    name:'Random Forest',short:'RF',
+    accuracy:85.24,precision:57.3,recall:59.9,f1:58.22,auc:73.53,
+    color:'#00E5B4',bg:'rgba(0,229,180,.08)',border:'rgba(0,229,180,.25)',
+    badge:'2ND PLACE',badgeColor:'#00E5B4',
+    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
+    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Strong but below the notebook winner.',
     isBest:false,
   },
   {
     name:'SVM (RBF)',short:'SVM',
-    accuracy:86.3,precision:85.7,recall:87.4,f1:86.5,auc:93.2,
+    accuracy:79.52,precision:57.06,recall:65.22,f1:57.86,auc:69.16,
     color:'#2D6AFF',bg:'rgba(45,106,255,.08)',border:'rgba(45,106,255,.25)',
     badge:'3RD PLACE',badgeColor:'#2D6AFF',
     kernel:'RBF',C:1.0,gamma:'scale',weight:'Balanced',
-    desc:'RBF kernel SVM with balanced class weights. Effective at capturing non-linear decision boundaries.',
+    desc:'RBF kernel SVM with balanced class weights. Competitive recall but weaker macro F1 than XGBoost.',
     isBest:false,
   },
   {
     name:'Logistic Regression',short:'LR',
-    accuracy:82.1,precision:81.4,recall:83.3,f1:82.3,auc:90.8,
+    accuracy:69.88,precision:56.75,recall:70.1,f1:54.26,auc:77.55,
     color:'#FFAA2C',bg:'rgba(255,170,44,.08)',border:'rgba(255,170,44,.25)',
     badge:'BASELINE',badgeColor:'#FFAA2C',
     C:1.0,maxIter:1000,weight:'Balanced',
-    desc:'Linear baseline model with L2 regularization. Interpretable and fast, serves as a strong baseline.',
+    desc:'Linear baseline model with L2 regularization. Fast and interpretable, but not the best macro-averaged performer.',
     isBest:false,
   },
 ];
@@ -126,14 +127,14 @@ function ModelRadar({model,size=160,animate}){
 }
 
 /* ── Grouped bar chart (SVG) ───────────────────────────────────── */
-function GroupedBar({animate}){
+function GroupedBar({animate,models}){
   const [w,setW]=useState(0);
   useEffect(()=>{if(animate)setTimeout(()=>setW(1),200);},[animate]);
 
   const W=680,H=220,pad={l:40,r:20,t:20,b:56};
   const chartW=W-pad.l-pad.r,chartH=H-pad.t-pad.b;
   const metrics=METRIC_KEYS;
-  const nGroups=metrics.length,nBars=MODELS.length;
+  const nGroups=metrics.length,nBars=models.length;
   const groupW=chartW/nGroups,barW=Math.min(groupW/(nBars+1),18),gap=2;
 
   return(
@@ -153,7 +154,7 @@ function GroupedBar({animate}){
         const gx=pad.l+gi*groupW;
         const totalBarsW=(nBars*barW)+(nBars-1)*gap;
         const startX=gx+(groupW-totalBarsW)/2;
-        return MODELS.map((m,bi)=>{
+        return models.map((m,bi)=>{
           const x=startX+bi*(barW+gap);
           const fullH=(m[mk]/100)*chartH;
           const h=fullH*w;
@@ -187,7 +188,7 @@ function GroupedBar({animate}){
 }
 
 /* ── AUC curve (simplified visual) ────────────────────────────── */
-function AUCCurves({animate}){
+function AUCCurves({animate,models}){
   const [prog,setProg]=useState(0);
   useEffect(()=>{
     if(!animate)return;
@@ -199,7 +200,7 @@ function AUCCurves({animate}){
   const cW=W-pad*2,cH=H-pad*2;
 
   // Generate ROC curve points for each model
-  const curves=MODELS.map(m=>{
+  const curves=models.map(m=>{
     const pts=[];const n=50;
     for(let i=0;i<=n;i++){
       const t=i/n;
@@ -249,6 +250,7 @@ function AUCCurves({animate}){
 
 /* ── Main page ─────────────────────────────────────────────────── */
 export default function Models(){
+  const [models,setModels]=useState(DEFAULT_MODELS);
   const [selected,setSelected]=useState(0);
   const [animate,setAnimate]=useState(false);
   const ref=useRef(null);
@@ -259,7 +261,31 @@ export default function Models(){
     return()=>obs.disconnect();
   },[]);
 
-  const m=MODELS[selected];
+  useEffect(()=>{
+    axios.get('http://localhost:5000/model-info')
+      .then(({data})=>{
+        if (!data?.ranking?.length) return;
+        const metricsByModel = Object.fromEntries(data.ranking.map(rank => [rank.model, rank.metrics]));
+        const nextModels = DEFAULT_MODELS.map((baseModel)=>({
+          ...baseModel,
+          ...metricsByModel[baseModel.name],
+        }));
+        const winner = data.winner || nextModels[0]?.name;
+        const bestIndex = nextModels.findIndex((model)=>model.name===winner);
+        setModels(nextModels.map((model, index)=>({
+          ...model,
+          isBest: index === bestIndex,
+          badge: index === bestIndex ? 'BEST MODEL' : index === 1 ? '2ND PLACE' : index === 2 ? '3RD PLACE' : 'BASELINE',
+        })));
+        setSelected(bestIndex >= 0 ? bestIndex : 0);
+      })
+      .catch(()=>{
+        setModels(DEFAULT_MODELS);
+        setSelected(0);
+      });
+  },[]);
+
+  const m=models[selected] || DEFAULT_MODELS[0];
 
   return(
     <div style={{maxWidth:1120,margin:'0 auto',padding:'2.5rem 2rem 6rem'}} ref={ref}>
@@ -282,8 +308,8 @@ export default function Models(){
 
       {/* ── Best model banner ── */}
       <div style={{
-        background:'linear-gradient(135deg,rgba(0,229,180,.08),rgba(45,106,255,.06))',
-        border:'1px solid rgba(0,229,180,.25)',borderRadius:16,
+        background:'linear-gradient(135deg,rgba(155,109,255,.08),rgba(45,106,255,.06))',
+        border:'1px solid rgba(155,109,255,.25)',borderRadius:16,
         padding:'1.4rem 2rem',marginBottom:'2rem',
         display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'1rem',
         animation:'fadeUp .5s ease .1s both',
@@ -291,29 +317,29 @@ export default function Models(){
         <div style={{display:'flex',alignItems:'center',gap:16}}>
           <div style={{
             width:48,height:48,borderRadius:12,
-            background:'rgba(0,229,180,.12)',border:'1px solid rgba(0,229,180,.3)',
+            background:'rgba(155,109,255,.12)',border:'1px solid rgba(155,109,255,.3)',
             display:'flex',alignItems:'center',justifyContent:'center',
-            fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',fontWeight:800,color:'#00E5B4',
-          }}>RF</div>
+            fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',fontWeight:800,color:'#9B6DFF',
+          }}>XGB</div>
           <div>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
               <span style={{fontFamily:'Space Grotesk,sans-serif',fontWeight:700,color:'#DCE8FF',fontSize:'1.05rem'}}>
-                Random Forest — Best Performing Model
+                XGBoost — Best Performing Model
               </span>
-              <span style={{fontSize:'.68rem',background:'rgba(0,229,180,.15)',color:'#00E5B4',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(0,229,180,.3)',fontWeight:700}}>
+              <span style={{fontSize:'.68rem',background:'rgba(155,109,255,.15)',color:'#9B6DFF',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(155,109,255,.3)',fontWeight:700}}>
                 AUTO-SELECTED
               </span>
             </div>
             <p style={{color:'#7A92BC',fontSize:'.84rem'}}>
-              Highest F1-Score ({MODELS[0].f1}%) and AUC-ROC ({MODELS[0].auc}%) across all evaluation metrics. Used for all CKD predictions.
+              Highest macro-averaged F1-Score ({models[0].f1.toFixed(2)}%) and AUC-ROC ({models[0].auc.toFixed(2)}%) from the notebook-backed model summary. Used for all CKD predictions.
             </p>
           </div>
         </div>
         <div style={{display:'flex',gap:'1.5rem'}}>
-          {['accuracy','f1','auc'].map((k,i)=>({k,l:['Accuracy','F1-Score','AUC-ROC'][i],c:['#00E5B4','#2D6AFF','#9B6DFF'][i]})).map(({k,l,c})=>(
+          {['accuracy','f1','auc'].map((k,i)=>({k,l:['Accuracy','F1-Score','AUC-ROC'][i],c:['#9B6DFF','#2D6AFF','#00E5B4'][i]})).map(({k,l,c})=>(
             <div key={k} style={{textAlign:'center'}}>
               <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'1.5rem',fontWeight:700,color:c}}>
-                {animate?<AnimVal to={MODELS[0][k]} started={animate}/>:`${MODELS[0][k]}%`}
+                {animate?<AnimVal to={models[0][k]} started={animate}/>:`${models[0][k]}%`}
               </div>
               <div style={{fontSize:'.7rem',color:'#3A506A',marginTop:2}}>{l}</div>
             </div>
@@ -326,7 +352,7 @@ export default function Models(){
         display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'1rem',
         marginBottom:'2rem',animation:'fadeUp .5s ease .15s both',
       }}>
-        {MODELS.map((mod,i)=>(
+        {models.map((mod,i)=>(
           <div key={i} onClick={()=>setSelected(i)} style={{
             background:selected===i?mod.bg:'#0D1526',
             border:`1px solid ${selected===i?mod.border:'#172240'}`,
@@ -424,7 +450,7 @@ export default function Models(){
             </div>
             {/* Legend */}
             <div style={{display:'flex',gap:'1rem'}}>
-              {MODELS.map((mod,i)=>(
+              {models.map((mod,i)=>(
                 <div key={i} style={{display:'flex',alignItems:'center',gap:5}}>
                   <div style={{width:10,height:10,borderRadius:2,background:mod.color}}/>
                   <span style={{fontSize:'.72rem',color:'#7A92BC'}}>{mod.short}</span>
@@ -432,7 +458,7 @@ export default function Models(){
               ))}
             </div>
           </div>
-          <GroupedBar animate={animate}/>
+          <GroupedBar animate={animate} models={models}/>
         </div>
 
         {/* AUC curves */}
@@ -443,9 +469,9 @@ export default function Models(){
             </div>
             <div style={{fontSize:'.76rem',color:'#3A506A'}}>AUC-ROC comparison</div>
           </div>
-          <AUCCurves animate={animate}/>
+          <AUCCurves animate={animate} models={models}/>
           <div style={{marginTop:'1rem',display:'flex',flexDirection:'column',gap:5}}>
-            {MODELS.map((mod,i)=>(
+            {models.map((mod,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:6,background:`${mod.color}08`}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   <div style={{width:20,height:2,background:mod.color,borderRadius:1}}/>
@@ -480,7 +506,7 @@ export default function Models(){
               </tr>
             </thead>
             <tbody>
-              {MODELS.map((mod,i)=>(
+              {models.map((mod,i)=>(
                 <tr key={i} style={{cursor:'pointer'}} onClick={()=>setSelected(i)}>
                   {[
                     <td key="n" style={{padding:'12px 14px',borderRadius:'8px 0 0 8px',background:selected===i?mod.bg:'#060B18',border:`1px solid ${selected===i?mod.border:'transparent'}`,borderRight:'none'}}>
@@ -515,16 +541,16 @@ export default function Models(){
         </div>
       </div>
 
-      {/* ── Why Random Forest wins ── */}
-      <div style={{background:'linear-gradient(135deg,rgba(0,229,180,.06),rgba(45,106,255,.04))',border:'1px solid rgba(0,229,180,.18)',borderRadius:16,padding:'1.8rem',animation:'fadeUp .5s ease .3s both'}}>
+      {/* ── Why XGBoost wins ── */}
+      <div style={{background:'linear-gradient(135deg,rgba(155,109,255,.06),rgba(45,106,255,.04))',border:'1px solid rgba(155,109,255,.18)',borderRadius:16,padding:'1.8rem',animation:'fadeUp .5s ease .3s both'}}>
         <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.05rem',fontWeight:700,color:'#DCE8FF',marginBottom:'1.2rem'}}>
-          🏆 Why Random Forest is Auto-Selected
+          🏆 Why XGBoost is Auto-Selected
         </h3>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1rem'}}>
           {[
-            {icon:'📊',title:'Highest F1-Score',desc:'F1 of 91.4% ensures balanced precision and recall — critical when both false positives and false negatives carry clinical consequences.'},
-            {icon:'🎯',title:'Best AUC-ROC',desc:'AUC of 96.3% means the model correctly ranks CKD patients above healthy ones in 96 out of 100 cases.'},
-            {icon:'🌲',title:'Ensemble Stability',desc:'200 decision trees average out individual errors, making predictions robust even on patients with unusual lab value combinations.'},
+            {icon:'📊',title:'Highest Macro F1',desc:`F1 of ${models[0].f1.toFixed(2)}% gives the best balanced precision–recall tradeoff across both CKD and non-CKD classes.`},
+            {icon:'🎯',title:'Notebook Winner',desc:'The backend metadata file generated from the trained notebook ranks XGBoost first by the macro-averaged F1 selection rule.'},
+            {icon:'🚀',title:'Boosted Tree Strength',desc:'XGBoost captures nonlinear clinical interactions with a boosted ensemble, producing the strongest macro-average ranking in the saved training summary.'},
           ].map((c,i)=>(
             <div key={i} style={{background:'rgba(0,0,0,.2)',borderRadius:10,padding:'1.2rem'}}>
               <div style={{fontSize:'1.4rem',marginBottom:8}}>{c.icon}</div>
