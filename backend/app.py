@@ -1,13 +1,18 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import json
+
 import joblib
 import numpy as np
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-model  = joblib.load('model/rf_model.pkl')
+model = joblib.load('model/xgb_model.pkl')
 scaler = joblib.load('model/scaler.pkl')
+
+with open('model/model_summary.json', 'r', encoding='utf-8') as f:
+    MODEL_SUMMARY = json.load(f)
 
 FEATURES = [
     'Age', 'BMI', 'HbA1c', 'SerumCreatinine', 'BUNLevels',
@@ -212,6 +217,10 @@ def get_recommendations(data, pred, age_group, age, norms):
 def home():
     return jsonify({'status': 'CKD API is running'})
 
+@app.route('/model-info')
+def model_info():
+    return jsonify(MODEL_SUMMARY)
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
@@ -244,6 +253,7 @@ def predict():
         'recommendations': recommendations,
         'is_pediatric'   : age < 18,
         'is_young'       : age < 40,
+        'model_name'     : MODEL_SUMMARY['winner'],
     })
 
 if __name__ == '__main__':
