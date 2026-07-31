@@ -1,4 +1,4 @@
-import React,{useState,useMemo} from 'react';
+import React,{useState,useMemo,useEffect} from 'react';
 import axios from 'axios';
 
 const FIELDS=[
@@ -78,6 +78,13 @@ export default function Predict(){
   const [result,setResult]=useState(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
+  const [modelInfo,setModelInfo]=useState(null);
+
+  useEffect(()=>{
+    axios.get('http://localhost:5000/model-info')
+      .then(({data})=>setModelInfo(data))
+      .catch(()=>setModelInfo(null));
+  },[]);
 
   const progress=useMemo(()=>Math.round((ALL_KEYS.filter(k=>form[k]!=='').length/ALL_KEYS.length)*100),[form]);
   const set=(k,v)=>setForm(p=>({...p,[k]:v}));
@@ -116,7 +123,7 @@ export default function Predict(){
           CKD Risk Assessment
         </h1>
         <p style={{color:'#7A92BC',fontSize:'.9rem',lineHeight:1.65}}>
-          Enter all patient clinical values below. Predictions use the <span style={{color:'#00E5B4',fontWeight:600}}>Random Forest</span> model — the best performer with 91.4% F1-Score.
+          Enter all patient clinical values below. Predictions use the <span style={{color:'#9B6DFF',fontWeight:600}}>{modelInfo?.winner || 'XGBoost'}</span> model — the notebook-selected macro F1 winner and the backend’s deployed classifier.
         </p>
       </div>
 
@@ -129,13 +136,13 @@ export default function Predict(){
         <div style={{width:8,height:8,borderRadius:'50%',background:'#00E5B4',animation:'blink 2s ease infinite'}}/>
         <span style={{fontSize:'.8rem',color:'#7A92BC'}}>
           Auto-selected model:{' '}
-          <span style={{color:'#00E5B4',fontWeight:700}}>Random Forest</span>
+          <span style={{color:'#9B6DFF',fontWeight:700}}>{modelInfo?.winner || 'XGBoost'}</span>
           <span style={{color:'#3A506A',margin:'0 8px'}}>·</span>
-          Accuracy <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>91.2%</span>
+          Accuracy <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['Accuracy'] ?? 84.94) * 100}%</span>
           <span style={{color:'#3A506A',margin:'0 8px'}}>·</span>
-          F1-Score <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>91.4%</span>
+          F1-Score <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['F1-Score'] ?? 0.6105) * 100}%</span>
           <span style={{color:'#3A506A',margin:'0 8px'}}>·</span>
-          AUC-ROC <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>96.3%</span>
+          AUC-ROC <span style={{color:'#DCE8FF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['AUC-ROC'] ?? 0.7472) * 100}%</span>
         </span>
       </div>
 
@@ -210,9 +217,9 @@ export default function Predict(){
               {loading?(
                 <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
                   <span style={{width:16,height:16,border:'2px solid rgba(255,255,255,.3)',borderTop:'2px solid #fff',borderRadius:'50%',display:'inline-block',animation:'spin .8s linear infinite'}}/>
-                  Analysing with Random Forest...
+                  Analysing with XGBoost...
                 </span>
-              ):'Run CKD Analysis (Random Forest) →'}
+              ):`Run CKD Analysis (${modelInfo?.winner || 'XGBoost'}) →`}
             </button>
             <button onClick={reset} style={{padding:'14px 24px',borderRadius:10,border:'1px solid #172240',background:'transparent',color:'#7A92BC',fontSize:'1rem',cursor:'pointer',transition:'all .2s'}}
               onMouseOver={e=>{e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.borderColor='#1F2F50';}}
@@ -267,8 +274,8 @@ export default function Predict(){
           }}>
             <span style={{width:7,height:7,borderRadius:'50%',background:'#00E5B4',display:'inline-block'}}/>
             <span style={{fontSize:'.8rem',color:'#7A92BC'}}>
-              Prediction by{' '}<span style={{color:'#00E5B4',fontWeight:700}}>Random Forest</span>
-              {' '}(Best Model · F1-Score 91.4% · AUC 96.3%)
+              Prediction by{' '}<span style={{color:'#9B6DFF',fontWeight:700}}>{result.model_name || modelInfo?.winner || 'XGBoost'}</span>
+              {' '}(Best Model · F1-Score {(modelInfo?.models?.[modelInfo?.winner]?.['F1-Score'] ?? 0.6105) * 100}% · AUC {(modelInfo?.models?.[modelInfo?.winner]?.['AUC-ROC'] ?? 0.7472) * 100}%)
             </span>
           </div>
 
