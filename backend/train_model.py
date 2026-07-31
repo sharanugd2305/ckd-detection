@@ -1,11 +1,17 @@
-import pandas as pd
-import numpy as np
-import joblib
+import json
 import os
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+
+import joblib
+import numpy as np
+import pandas as pd
 from imblearn.over_sampling import SMOTE
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from xgboost import XGBClassifier
 
 # Load dataset
 df = pd.read_csv('../data/ckd_1659.csv')
@@ -35,19 +41,86 @@ smote = SMOTE(sampling_strategy=1.0,
               k_neighbors=5, random_state=42)
 X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
 
-# Train
-model = RandomForestClassifier(
-    n_estimators=200,
-    class_weight='balanced',
-    min_samples_split=5,
-    random_state=42
-)
-model.fit(X_train_sm, y_train_sm)
+MODEL_MAP = {
+    'Logistic Regression': LogisticRegression(
+        max_iter=1000,
+        class_weight='balanced',
+        random_state=42,
+    ),
+    'Random Forest': RandomForestClassifier(
+        n_estimators=200,
+        class_weight='balanced',
+        min_samples_split=5,
+        random_state=42,
+    ),
+    'SVM (RBF)': SVC(
+        kernel='rbf',
+        gamma='scale',
+        class_weight='balanced',
+        probability=True,
+        random_state=42,
+    ),
+    'XGBoost': XGBClassifier(
+        objective='binary:logistic',
+        n_estimators=200,
+        learning_rate=0.1,
+        max_depth=6,
+        random_state=42,
+        eval_metric='logloss',
+    ),
+}
 
-# Save
+
+def compute_metrics(y_true, y_pred, y_prob):
+    return {
+        'Accuracy': round(float(accuracy_score(y_true, y_pred)), 4),
+        'Precision': round(float(precision_score(y_true, y_pred, average='macro', zero_division=0)), 4),
+        'Recall': round(float(recall_score(y_true, y_pred, average='macro', zero_division=0)), 4),
+        'F1-Score': round(float(f1_score(y_true, y_pred, average='macro', zero_division=0)), 4),
+        'AUC-ROC': round(float(roc_auc_score(y_true, y_prob)), 4),
+    }
+
+summary = {}
+for name, model in MODEL_MAP.items():
+    model.fit(X_train_sm, y_train_sm)
+    pred = model.predict(X_test)
+    proba = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else pred
+    summary[name] = compute_metrics(y_test, pred, proba)
+
+summary_df = pd.DataFrame(summary).T.sort_values('F1-Score', ascending=False)
+summary_df = summary_df.reset_index().rename(columns={'index': 'Model'})
+winner = summary_df.iloc[0]['Model']
+
 os.makedirs('model', exist_ok=True)
-joblib.dump(model,  'model/rf_model.pkl')
 joblib.dump(scaler, 'model/scaler.pkl')
+joblib.dump(MODEL_MAP['XGBoost'], 'model/xgb_model.pkl')
+joblib.dump(MODEL_MAP['Random Forest'], 'model/rf_model.pkl')
 
-print("Model saved  -> backend/model/rf_model.pkl")
-print("Scaler saved -> backend/model/scaler.pkl")
+metadata = {
+    'winner': winner,
+    'ranking': [
+        {
+            'model': row['Model'],
+            'metrics': {
+                'Accuracy': row['Accuracy'],
+                'Precision': row['Precision'],
+                'Recall': row['Recall'],
+                'F1-Score': row['F1-Score'],
+                'AUC-ROC': row['AUC-ROC'],
+            },
+        }
+        for _, row in summary_df.iterrows()
+    ],
+    'models': {name: metrics for name, metrics in summary.items()},
+}
+
+with open('model/model_summary.json', 'w', encoding='utf-8') as f:
+    json.dump(metadata, f, indent=2)
+
+print('=== MODEL COMPARISON SUMMARY (Macro Average) ===')
+print(summary_df.to_string(index=False))
+print(f'Winner by F1-Score: {winner}')
+print('Saved artifact -> backend/model/xgb_model.pkl')
+print('Saved artifact -> backend/model/rf_model.pkl')
+print('Saved artifact -> backend/model/scaler.pkl')
+print('Saved artifact -> backend/model/model_summary.json')
