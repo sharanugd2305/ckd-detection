@@ -83,7 +83,7 @@ export default function Home(){
     {icon:'📊',title:'CKD Stage Estimation',     body:'GFR-based staging maps every result to Stage 1–5 following KDIGO international clinical guidelines.',accent:'#9B6DFF',delay:160},
     {icon:'🚦',title:'Early Detection Alerts',   body:'Specialized warning system for high-risk groups — children, young adults, and patients with family history.',accent:'#FFAA2C',delay:240},
     {icon:'💊',title:'Personalized Guidance',    body:'Evidence-based health recommendations tailored to each patient\'s specific lab values, age group, and identified risk factors.',accent:'#00E5B4',delay:320},
-    {icon:'🔬',title:'Multi-Model Ensemble',     body:'Logistic Regression, Random Forest, SVM, and XGBoost — all trained with SMOTE balancing on clinically validated data.',accent:'#2D6AFF',delay:400},
+    {icon:'🔬',title:'Leakage-Safe Multi-Model Ensemble',     body:'Logistic Regression, Random Forest, SVM, and XGBoost — all trained with train-only scaling and SMOTENC balancing on clinically validated data.',accent:'#2D6AFF',delay:400},
   ];
 
   const ages=[
