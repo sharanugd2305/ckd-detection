@@ -91,7 +91,7 @@ export default function About(){
       <Section title="🧬 Selected Clinical Features (11)" accent="#00E5B4">
         <div>{features.map((f,i)=><Tag key={i} label={f} color="#00E5B4"/>)}</div>
         <p style={{color:'#7A92BC',fontSize:'.82rem',marginTop:'1rem',lineHeight:1.6}}>
-          Features were selected based on clinical significance, availability in routine lab tests, coverage across the training dataset, and Random Forest feature importance scores. All features are numeric — no manual encoding required at inference time.
+          Features were selected based on clinical significance, availability in routine lab tests, coverage across the training dataset, and leakage-safe model comparison logic. All features are numeric at inference time after the same train-only preprocessing pipeline is applied.
         </p>
       </Section>
 
