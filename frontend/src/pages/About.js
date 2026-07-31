@@ -112,9 +112,9 @@ export default function About(){
       {/* Models */}
       <Section title="🤖 ML Models Trained" accent="#FFAA2C">
         <ModelRow name="Logistic Regression" desc="Baseline linear model · class_weight='balanced' · max_iter=1000"/>
-        <ModelRow name="Random Forest"       desc="200 estimators · class_weight='balanced' · min_samples_split=5" isBest/>
+        <ModelRow name="Random Forest"       desc="200 estimators · class_weight='balanced' · min_samples_split=5"/>
         <ModelRow name="SVM (RBF kernel)"    desc="kernel='rbf' · gamma='scale' · class_weight='balanced'"/>
-        <ModelRow name="XGBoost"             desc="200 rounds · learning_rate=0.1 · max_depth=6"/>
+        <ModelRow name="XGBoost"             desc="200 rounds · learning_rate=0.1 · max_depth=6" isBest/>
         <div style={{marginTop:'1rem',padding:'10px 14px',borderRadius:8,background:'rgba(0,229,180,.06)',border:'1px solid rgba(0,229,180,.2)'}}>
           <span style={{color:'#7A92BC',fontSize:'.82rem'}}>
             All models evaluated using <span style={{color:'#00E5B4',fontWeight:600}}>macro-averaged</span> Precision, Recall, and F1-Score to ensure equal weight is given to both CKD and non-CKD classes regardless of class distribution.
