@@ -27,9 +27,9 @@ TARGET = 'Diagnosis'
 X = df[FEATURES].values
 y = df[TARGET].values
 
-# Split BEFORE scaling to avoid test-set leakage
+# Split BEFORE scaling to avoid test-set leakage (70:30)
 X_train_raw, X_test_raw, y_train, y_test = train_test_split(
-    X, y, test_size=0.2,
+    X, y, test_size=0.3,
     random_state=42, stratify=y)
 
 # Scale using TRAINING-ONLY fit statistics
