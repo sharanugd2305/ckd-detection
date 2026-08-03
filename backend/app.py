@@ -1,18 +1,27 @@
 import json
+import os
 
 import joblib
 import numpy as np
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, 'model')
+
 app = Flask(__name__)
 CORS(app)
 
-model = joblib.load('model/xgb_model.pkl')
-scaler = joblib.load('model/scaler.pkl')
-
-with open('model/model_summary.json', 'r', encoding='utf-8') as f:
+with open(os.path.join(MODEL_DIR, 'model_summary.json'), 'r', encoding='utf-8') as f:
     MODEL_SUMMARY = json.load(f)
+
+winner = MODEL_SUMMARY.get('winner', 'XGBoost')
+MODEL_ARTIFACTS = {
+    'Random Forest': 'rf_model.pkl',
+    'XGBoost': 'xgb_model.pkl',
+}
+model = joblib.load(os.path.join(MODEL_DIR, MODEL_ARTIFACTS.get(winner, 'xgb_model.pkl')))
+scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))
 
 FEATURES = [
     'Age', 'BMI', 'HbA1c', 'SerumCreatinine', 'BUNLevels',
