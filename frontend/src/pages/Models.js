@@ -4,39 +4,39 @@ import axios from 'axios';
 /* ── Verified fallback model performance data from the trained notebook summary ─────────────────────────────────── */
 const DEFAULT_MODELS=[
   {
-    name:'XGBoost',short:'XGB',
-    accuracy:84.94,precision:59.43,recall:64.8,f1:61.05,auc:74.72,
-    color:'#9B6DFF',bg:'rgba(155,109,255,.08)',border:'rgba(155,109,255,.25)',
-    badge:'BEST MODEL',badgeColor:'#9B6DFF',
-    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
-    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Macro-averaged F1 best reflects the notebook winner.',
+    name:'Random Forest',short:'RF',
+    accuracy:86.95,precision:60.43,recall:62.92,f1:61.45,auc:74.68,
+    color:'#00E5B4',bg:'rgba(0,229,180,.08)',border:'rgba(0,229,180,.25)',
+    badge:'BEST MODEL',badgeColor:'#00E5B4',
+    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
+    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Best macro-averaged F1 in the new 70/30 summary.',
     isBest:true,
   },
   {
-    name:'Random Forest',short:'RF',
-    accuracy:85.24,precision:57.3,recall:59.9,f1:58.22,auc:73.53,
-    color:'#00E5B4',bg:'rgba(0,229,180,.08)',border:'rgba(0,229,180,.25)',
-    badge:'2ND PLACE',badgeColor:'#00E5B4',
-    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
-    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Strong but below the notebook winner.',
+    name:'XGBoost',short:'XGB',
+    accuracy:86.75,precision:60.17,recall:62.81,f1:61.24,auc:76.08,
+    color:'#9B6DFF',bg:'rgba(155,109,255,.08)',border:'rgba(155,109,255,.25)',
+    badge:'2ND PLACE',badgeColor:'#9B6DFF',
+    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
+    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Very close to the winner across the same 70/30 split.',
     isBest:false,
   },
   {
     name:'SVM (RBF)',short:'SVM',
-    accuracy:79.52,precision:57.06,recall:65.22,f1:57.86,auc:69.16,
+    accuracy:80.52,precision:56.95,recall:63.85,f1:57.91,auc:66.54,
     color:'#2D6AFF',bg:'rgba(45,106,255,.08)',border:'rgba(45,106,255,.25)',
     badge:'3RD PLACE',badgeColor:'#2D6AFF',
     kernel:'RBF',C:1.0,gamma:'scale',weight:'Balanced',
-    desc:'RBF kernel SVM with balanced class weights. Competitive recall but weaker macro F1 than XGBoost.',
+    desc:'RBF kernel SVM with balanced class weights. Competitive recall but weaker macro F1 than the top two models.',
     isBest:false,
   },
   {
     name:'Logistic Regression',short:'LR',
-    accuracy:69.88,precision:56.75,recall:70.1,f1:54.26,auc:77.55,
+    accuracy:71.89,precision:57.14,recall:70.25,f1:55.54,auc:76.60,
     color:'#FFAA2C',bg:'rgba(255,170,44,.08)',border:'rgba(255,170,44,.25)',
     badge:'BASELINE',badgeColor:'#FFAA2C',
     C:1.0,maxIter:1000,weight:'Balanced',
-    desc:'Linear baseline model with L2 regularization. Fast and interpretable, but not the best macro-averaged performer.',
+    desc:'Linear baseline model with L2 regularization. Fast and interpretable, but not the strongest macro-averaged performer.',
     isBest:false,
   },
 ];
@@ -317,16 +317,16 @@ export default function Models(){
         <div style={{display:'flex',alignItems:'center',gap:16}}>
           <div style={{
             width:48,height:48,borderRadius:12,
-            background:'rgba(155,109,255,.12)',border:'1px solid rgba(155,109,255,.3)',
+            background:'rgba(0,229,180,.12)',border:'1px solid rgba(0,229,180,.3)',
             display:'flex',alignItems:'center',justifyContent:'center',
-            fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',fontWeight:800,color:'#9B6DFF',
-          }}>XGB</div>
+            fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',fontWeight:800,color:'#00E5B4',
+          }}>RF</div>
           <div>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
               <span style={{fontFamily:'Space Grotesk,sans-serif',fontWeight:700,color:'#DCE8FF',fontSize:'1.05rem'}}>
-                XGBoost — Best Performing Model
+                Random Forest — Best Performing Model
               </span>
-              <span style={{fontSize:'.68rem',background:'rgba(155,109,255,.15)',color:'#9B6DFF',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(155,109,255,.3)',fontWeight:700}}>
+              <span style={{fontSize:'.68rem',background:'rgba(0,229,180,.15)',color:'#00E5B4',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(0,229,180,.3)',fontWeight:700}}>
                 AUTO-SELECTED
               </span>
             </div>
