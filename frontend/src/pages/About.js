@@ -59,7 +59,7 @@ export default function About(){
   const pipeline=[
     {step:'Data Collection',  desc:'Clinical patient dataset with real diagnostic labels',color:'#2D6AFF'},
     {step:'Preprocessing',    desc:'StandardScaler normalization · LabelEncoder for categorical features',color:'#9B6DFF'},
-    {step:'Train-Test Split', desc:'80/20 stratified split preserving class proportions',color:'#00E5B4'},
+    {step:'Train-Test Split', desc:'70/30 stratified split preserving class proportions',color:'#00E5B4'},
     {step:'SMOTE Balancing',  desc:'Applied only on training data to address class imbalance',color:'#FFAA2C'},
     {step:'Model Training',   desc:'Four ML models trained and cross-validated',color:'#FF3D57'},
     {step:'Evaluation',       desc:'Accuracy, Precision, Recall, F1-Score (macro average)',color:'#2D6AFF'},
