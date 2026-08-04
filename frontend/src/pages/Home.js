@@ -170,14 +170,13 @@ export default function Home(){
 
       {/* ── Stats row ── */}
       <div style={{
-        display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'1rem',
+        display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1rem',
         marginBottom:'4rem',
       }}>
         {[
           {v:11,s:'',label:'Clinical Features',color:'#2D6AFF'},
           {v:4, s:'',label:'ML Models',color:'#00E5B4'},
           {v:6, s:'',label:'Age Groups Covered',color:'#9B6DFF'},
-          {v:90,s:'%+',label:'Detection Accuracy',color:'#FFAA2C'},
         ].map((st,i)=>(
           <div key={i} style={{
             background:'#0D1526',border:'1px solid #172240',borderRadius:14,
