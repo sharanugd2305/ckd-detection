@@ -142,22 +142,7 @@ export default function About(){
         </p>
       </Section>
 
-      {/* Tech stack */}
-      <Section title="🛠️ Technology Stack" accent="#2D6AFF">
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
-          {[
-            {cat:'Backend',   items:['Python 3.10','Flask','flask-cors','scikit-learn','XGBoost','joblib']},
-            {cat:'Frontend',  items:['React 18','React Router v6','Axios','Space Grotesk','JetBrains Mono']},
-            {cat:'ML / Data', items:['Random Forest','SVM','XGBoost','Logistic Regression','SMOTE','StandardScaler']},
-            {cat:'Dev Tools', items:['VS Code','Google Colab','pandas','numpy','matplotlib','seaborn']},
-          ].map((s,i)=>(
-            <div key={i}>
-              <div style={{color:'#3A506A',fontSize:'.7rem',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:6}}>{s.cat}</div>
-              <div>{s.items.map((it,j)=><Tag key={j} label={it} color="#2D6AFF"/>)}</div>
-            </div>
-          ))}
-        </div>
-      </Section>
+     
 
       {/* Disclaimer */}
       <div style={{textAlign:'center',color:'#3A506A',fontSize:'.76rem',lineHeight:1.7,padding:'1rem',border:'1px solid #172240',borderRadius:10}}>
