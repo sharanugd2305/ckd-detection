@@ -21,7 +21,7 @@ function Tag({label,color='#2D6AFF'}){
   );
 }
 
-function ModelRow({name,desc,isBest=false}){
+function ModelRow({name,desc}){
   const [hov,setHov]=useState(false);
   return(
     <div
@@ -36,14 +36,7 @@ function ModelRow({name,desc,isBest=false}){
         marginBottom:4,
       }}
     >
-      <div style={{display:'flex',alignItems:'center',gap:10}}>
-        {isBest&&(
-          <span style={{fontSize:'.68rem',background:'rgba(0,229,180,.15)',color:'#00E5B4',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(0,229,180,.3)',fontWeight:700,flexShrink:0}}>
-            BEST
-          </span>
-        )}
-        <span style={{color:'#DCE8FF',fontWeight:600,fontSize:'.9rem'}}>{name}</span>
-      </div>
+      <span style={{color:'#DCE8FF',fontWeight:600,fontSize:'.9rem'}}>{name}</span>
       <span style={{color:'#7A92BC',fontSize:'.82rem'}}>{desc}</span>
     </div>
   );
@@ -114,7 +107,7 @@ export default function About(){
         <ModelRow name="Logistic Regression" desc="Baseline linear model · class_weight='balanced' · max_iter=1000"/>
         <ModelRow name="Random Forest"       desc="200 estimators · class_weight='balanced' · min_samples_split=5"/>
         <ModelRow name="SVM (RBF kernel)"    desc="kernel='rbf' · gamma='scale' · class_weight='balanced'"/>
-        <ModelRow name="XGBoost"             desc="200 rounds · learning_rate=0.1 · max_depth=6" isBest/>
+        <ModelRow name="XGBoost"             desc="200 rounds · learning_rate=0.1 · max_depth=6"/>
         <div style={{marginTop:'1rem',padding:'10px 14px',borderRadius:8,background:'rgba(0,229,180,.06)',border:'1px solid rgba(0,229,180,.2)'}}>
           <span style={{color:'#7A92BC',fontSize:'.82rem'}}>
             All models evaluated using <span style={{color:'#00E5B4',fontWeight:600}}>macro-averaged</span> Precision, Recall, and F1-Score to ensure equal weight is given to both CKD and non-CKD classes regardless of class distribution.
