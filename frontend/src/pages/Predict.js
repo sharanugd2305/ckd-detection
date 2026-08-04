@@ -123,7 +123,7 @@ export default function Predict(){
           CKD Risk Assessment
         </h1>
         <p style={{color:'#7A92BC',fontSize:'.9rem',lineHeight:1.65}}>
-          Enter all patient clinical values below. Predictions use the <span style={{color:'#9B6DFF',fontWeight:600}}>{modelInfo?.winner || 'Random Forest'}</span> model — the notebook-selected macro F1 winner and the backend’s deployed classifier.
+          Enter all patient clinical values below. Predictions use the <span style={{color:'#9B6DFF',fontWeight:600}}>{modelInfo?.winner || 'Random Forest'}</span> model.
         </p>
       </div>
 
