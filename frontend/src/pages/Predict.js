@@ -351,7 +351,7 @@ export default function Predict(){
                   {label:'Stage 4',  range:'GFR 15–29',color:'#FF5E5B'},
                   {label:'Stage 5',  range:'GFR < 15', color:'#FF3D57'},
                 ].map((s,i)=>{
-                  const active=result.ckd_stage===s.label||result.ckd_stage==='Stage 1-2'&&s.label==='Stage 1–2';
+                  const active=(result.ckd_stage===s.label) || (result.ckd_stage==='Stage 1-2' && s.label==='Stage 1–2');
                   return(
                     <div key={i} style={{flex:1,borderRadius:9,padding:'10px 6px',textAlign:'center',background:active?s.color:'rgba(255,255,255,.02)',border:`1px solid ${active?s.color:'#172240'}`,transition:'all .35s ease'}}>
                       <div style={{fontWeight:700,fontSize:'.78rem',color:active?'#fff':s.color}}>{s.label}</div>
