@@ -534,11 +534,7 @@ export default function Models(){
             </tbody>
           </table>
         </div>
-        <div style={{marginTop:'1rem',padding:'10px 14px',borderRadius:8,background:'rgba(45,106,255,.06)',border:'1px solid rgba(45,106,255,.15)'}}>
-          <span style={{color:'#7A92BC',fontSize:'.8rem'}}>
-            All metrics computed using <span style={{color:'#2D6AFF',fontWeight:600}}>macro-averaged</span> scoring to ensure fair evaluation across both CKD-positive and CKD-negative classes. SMOTE applied only on training data.
-          </span>
-        </div>
+      
       </div>
     </div>
   );
