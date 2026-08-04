@@ -213,11 +213,6 @@ function AUCCurves({animate,models}){
     return{...m,pts};
   });
 
-  const clip=`M${pad},${pad+cH} ` + Array.from({length:51},(_,i)=>{
-    const t=i/50;
-    return `L${pad+t*cW},${pad+cH-(t)*cH}`;
-  }).slice(0,Math.ceil((prog/100)*51)).join(' ');
-
   return(
     <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
       {/* Grid */}
