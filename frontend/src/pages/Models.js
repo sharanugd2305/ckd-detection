@@ -540,26 +540,6 @@ export default function Models(){
           </span>
         </div>
       </div>
-
-      {/* ── Why XGBoost wins ── */}
-      <div style={{background:'linear-gradient(135deg,rgba(155,109,255,.06),rgba(45,106,255,.04))',border:'1px solid rgba(155,109,255,.18)',borderRadius:16,padding:'1.8rem',animation:'fadeUp .5s ease .3s both'}}>
-        <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.05rem',fontWeight:700,color:'#DCE8FF',marginBottom:'1.2rem'}}>
-          🏆 Why XGBoost is Auto-Selected
-        </h3>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1rem'}}>
-          {[
-            {icon:'📊',title:'Highest Macro F1',desc:`F1 of ${models[0].f1.toFixed(2)}% gives the best balanced precision–recall tradeoff across both CKD and non-CKD classes.`},
-            {icon:'🎯',title:'Notebook Winner',desc:'The backend metadata file generated from the trained notebook ranks XGBoost first by the macro-averaged F1 selection rule.'},
-            {icon:'🚀',title:'Boosted Tree Strength',desc:'XGBoost captures nonlinear clinical interactions with a boosted ensemble, producing the strongest macro-average ranking in the saved training summary.'},
-          ].map((c,i)=>(
-            <div key={i} style={{background:'rgba(0,0,0,.2)',borderRadius:10,padding:'1.2rem'}}>
-              <div style={{fontSize:'1.4rem',marginBottom:8}}>{c.icon}</div>
-              <div style={{fontFamily:'Space Grotesk,sans-serif',fontWeight:600,color:'#DCE8FF',fontSize:'.88rem',marginBottom:6}}>{c.title}</div>
-              <div style={{color:'#7A92BC',fontSize:'.81rem',lineHeight:1.6}}>{c.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
