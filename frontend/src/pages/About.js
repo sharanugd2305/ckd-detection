@@ -161,8 +161,8 @@ export default function About(){
 
       {/* Disclaimer */}
       <div style={{textAlign:'center',color:'#3A506A',fontSize:'.76rem',lineHeight:1.7,padding:'1rem',border:'1px solid #172240',borderRadius:10}}>
-        ⚠️ NephroScan is developed for academic research and educational purposes only.<br/>
-        It is not a certified medical device. All predictions should be verified by a qualified nephrologist or pediatric specialist.
+        ⚠️ NephroScan is developed for academic research and educational purposes.<br/>
+        It is not a certified medical device.
       </div>
     </div>
   );
