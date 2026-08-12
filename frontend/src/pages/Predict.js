@@ -18,6 +18,12 @@ const FIELDS=[
 const ALL_KEYS=FIELDS.map(f=>f.key);
 const init=Object.fromEntries(ALL_KEYS.map(k=>[k,'']));
 
+const SECTION_FIELDS=[
+  {title:'Personal Details', subtitle:'Patient profile and background', keys:['Age','BMI','FamilyHistoryKidneyDisease']},
+  {title:'Blood & Lab Markers', subtitle:'Core blood chemistry and kidney function', keys:['HbA1c','SerumCreatinine','BUNLevels','GFR','HemoglobinLevels','CholesterolTotal']},
+  {title:'Urine & Infection Profile', subtitle:'Urinary findings and infection history', keys:['ProteinInUrine','UrinaryTractInfections']},
+];
+
 const RC={
   success:{bg:'rgba(0,229,180,.07)',border:'rgba(0,229,180,.25)',text:'#00E5B4'},
   warning:{bg:'rgba(255,170,44,.07)',border:'rgba(255,170,44,.25)',text:'#FFAA2C'},
@@ -162,37 +168,51 @@ export default function Predict(){
             {progress===100&&<span style={{fontSize:'.8rem',color:'#00E5B4',fontWeight:600,whiteSpace:'nowrap',animation:'fadeIn .3s ease'}}>✓ Ready</span>}
           </div>
 
-          {/* Single grid of all 11 fields */}
-          <div style={{background:'#0D1526',border:'1px solid #172240',borderRadius:16,padding:'1.6rem',marginBottom:'1.2rem'}}>
-            <div style={{fontSize:'.7rem',color:'#3A506A',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:'1.2rem'}}>
-              Patient Clinical Values — All 11 Fields
-            </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
-              {FIELDS.map((f)=>(
-                <div key={f.key} style={{
-                  background:'#060B18',
-                  border:`1px solid ${form[f.key]!==''?'#1F2F50':'#172240'}`,
-                  borderRadius:10,padding:'1rem',transition:'border-color .2s',
-                }}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                    <label style={{fontSize:'.8rem',color:'#7A92BC',fontWeight:500}}>{f.label}</label>
-                    <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'#3A506A',background:'#0A1020',padding:'2px 7px',borderRadius:4}}>{f.unit}</span>
-                  </div>
-                  <input
-                    type="number" min={f.min} max={f.max} step={f.step}
-                    value={form[f.key]} placeholder="—"
-                    onChange={e=>set(f.key,e.target.value)}
-                    style={iStyle}
-                    onFocus={e=>e.target.style.borderColor='#2D6AFF'}
-                    onBlur={e=>e.target.style.borderColor=form[f.key]!==''?'#1F2F50':'#172240'}
-                  />
-                  <div style={{display:'flex',justifyContent:'space-between',marginTop:6,gap:6}}>
-                    <span style={{fontSize:'.67rem',color:'#3A506A',lineHeight:1.4,flex:1}}>{f.desc}</span>
-                    <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'#2D6AFF',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
+          {/* Grouped input sections */}
+          <div style={{display:'grid',gap:'1.2rem',marginBottom:'1.2rem'}}>
+            {SECTION_FIELDS.map((section)=>(
+              <div key={section.title} style={{background:'#0D1526',border:'1px solid #172240',borderRadius:16,padding:'1.4rem'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:'1rem'}}>
+                  <div>
+                    <div style={{fontSize:'.7rem',color:'#3A506A',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase'}}>
+                      {section.title}
+                    </div>
+                    <div style={{fontSize:'.72rem',color:'#7A92BC',marginTop:4}}>{section.subtitle}</div>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
+                  {section.keys.map((key)=>{
+                    const f = FIELDS.find(field => field.key === key);
+                    if (!f) return null;
+
+                    return (
+                      <div key={f.key} style={{
+                        background:'#060B18',
+                        border:`1px solid ${form[f.key]!==''?'#1F2F50':'#172240'}`,
+                        borderRadius:10,padding:'1rem',transition:'border-color .2s',
+                      }}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                          <label style={{fontSize:'.8rem',color:'#7A92BC',fontWeight:500}}>{f.label}</label>
+                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'#3A506A',background:'#0A1020',padding:'2px 7px',borderRadius:4}}>{f.unit}</span>
+                        </div>
+                        <input
+                          type="number" min={f.min} max={f.max} step={f.step}
+                          value={form[f.key]} placeholder="—"
+                          onChange={e=>set(f.key,e.target.value)}
+                          style={iStyle}
+                          onFocus={e=>e.target.style.borderColor='#2D6AFF'}
+                          onBlur={e=>e.target.style.borderColor=form[f.key]!==''?'#1F2F50':'#172240'}
+                        />
+                        <div style={{display:'flex',justifyContent:'space-between',marginTop:6,gap:6}}>
+                          <span style={{fontSize:'.67rem',color:'#3A506A',lineHeight:1.4,flex:1}}>{f.desc}</span>
+                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'#2D6AFF',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           {error&&(
