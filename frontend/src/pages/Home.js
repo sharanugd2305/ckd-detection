@@ -146,6 +146,7 @@ export default function Home() {
         transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)`,
         transition: 'transform 0.2s ease-out',
       }} />
+      {/* ── Kidney Background ── */}
       <div style={{
         position: 'fixed',
         inset: 0,
@@ -153,7 +154,7 @@ export default function Home() {
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
         backgroundSize: 'cover',
-        opacity: 0.7,
+        opacity: 0.25,
         pointerEvents: 'none',
         filter: 'saturate(0.9) brightness(1.05)',
         zIndex: -1,
