@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
-import kidneyImg from '../images/kidney_img.png';
+import kidneyImg from '../images/kidney.jpg';
 
 /* ── Animated counter ── */
 function Counter({to,suffix='',duration=1800}){
@@ -124,6 +124,11 @@ export default function Home(){
           50% { transform: translateY(-20px); }
           100% { transform: translateY(0px); }
         }
+        @keyframes breathe {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+          100% { transform: scale(1); }
+        }
       `}</style>
 
       {/* ── Background Global Glows ── */}
@@ -146,12 +151,12 @@ export default function Home(){
       <div style={{paddingTop:'5rem',paddingBottom:'4rem',textAlign:'center',position:'relative',overflow:'hidden'}}>
         <div style={{
           position:'absolute',
-          inset:'-10% 0 0 0',
+          inset:'-5% -5% -5% -5%', // Expanded inset to prevent edge clipping during animation
           backgroundImage:`url(${kidneyImg})`,
           backgroundRepeat:'no-repeat',
-          backgroundPosition:'center center',
+          backgroundPosition:'50% 50%',
           backgroundSize:'cover',
-          opacity:0.22,
+          opacity:0.25,
           pointerEvents:'none',
           filter:'saturate(0.9) brightness(1.05)',
         }}/>
