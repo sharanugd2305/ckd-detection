@@ -108,86 +108,77 @@ export default function Home(){
     <div style={{maxWidth:1120,margin:'0 auto',padding:'0 2rem 6rem'}}>
 
       {/* ── Hero ── */}
-      <div style={{paddingTop:'5rem',paddingBottom:'4rem',textAlign:'center',position:'relative'}}>
+      <div style={{paddingTop:'5rem',paddingBottom:'4rem',textAlign:'center',position:'relative',overflow:'hidden'}}>
+        <div style={{
+          position:'absolute',
+          inset:'-10% 0 0 0',
+          backgroundImage:`url(${kidneyImg})`,
+          backgroundRepeat:'no-repeat',
+          backgroundPosition:'center center',
+          backgroundSize:'cover',
+          opacity:0.22,
+          pointerEvents:'none',
+          filter:'saturate(0.9) brightness(1.05)',
+        }}/>
+
         {/* Background glows */}
         <div style={{position:'absolute',top:0,left:'20%',width:500,height:400,background:'radial-gradient(circle,rgba(45,106,255,.07) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
         <div style={{position:'absolute',top:'15%',right:'10%',width:350,height:350,background:'radial-gradient(circle,rgba(0,229,180,.05) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
 
-        <div style={{
-          display:'inline-flex',alignItems:'center',gap:8,
-          padding:'5px 14px',borderRadius:999,marginBottom:'1.2rem',
-          background:'rgba(45,106,255,.08)',
-          border:'1px solid rgba(45,106,255,.2)',
-          animation:'fadeUp .4s ease',
-        }}>
-          <span style={{width:7,height:7,borderRadius:'50%',background:'#00E5B4',display:'inline-block',animation:'blink 1.5s ease infinite'}}/>
-          <span style={{fontSize:'.78rem',color:'#00E5B4',fontWeight:500,letterSpacing:'.04em'}}>LIVE</span>
-        </div>
-
-        <h1 style={{
-          fontFamily:'Space Grotesk,sans-serif',
-          fontSize:'clamp(2.2rem,5.5vw,3.8rem)',
-          fontWeight:800,lineHeight:1.08,letterSpacing:'-.035em',
-          marginBottom:'1.4rem',
-          animation:'fadeUp .5s ease .08s both',
-        }}>
-          <span style={{
-            backgroundImage:'linear-gradient(135deg,#2D6AFF 20%,#00E5B4 80%)',
-            backgroundSize:'200% 200%',
-            WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
-            animation:'gradShift 4s ease infinite',
-          }}>Detect Kidney Disease</span>
-        </h1>
-
-        <p style={{
-          color:'#7A92BC',fontSize:'1.05rem',maxWidth:520,margin:'0 auto 2.4rem',
-          lineHeight:1.75,animation:'fadeUp .5s ease .16s both',
-        }}>
-          AI-powered CKD risk assessment for every age group — from newborns to seniors. Clinical values in, instant diagnosis out.
-        </p>
-
-        <div style={{display:'flex',gap:'1rem',justifyContent:'center',flexWrap:'wrap',animation:'fadeUp .5s ease .24s both'}}>
-          <button onClick={()=>nav('/predict')} style={{
-            padding:'13px 32px',borderRadius:10,border:'none',cursor:'pointer',
-            background:'linear-gradient(135deg,#2D6AFF,#00E5B4)',
-            color:'#fff',fontFamily:'Space Grotesk,sans-serif',
-            fontSize:'.95rem',fontWeight:700,letterSpacing:'-.01em',
-            boxShadow:'0 8px 28px rgba(45,106,255,.35)',
-            transition:'all .2s',
-          }}
-            onMouseOver={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 14px 36px rgba(45,106,255,.5)';}}
-            onMouseOut={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 8px 28px rgba(45,106,255,.35)';}}
-          >Start Analysis →</button>
-          <button onClick={()=>nav('/about')} style={{
-            padding:'13px 28px',borderRadius:10,border:'1px solid #172240',
-            background:'transparent',color:'#7A92BC',fontSize:'.95rem',cursor:'pointer',
-            transition:'all .2s',
-          }}
-            onMouseOver={e=>{e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.borderColor='#1F2F50';}}
-            onMouseOut={e=>{e.currentTarget.style.color='#7A92BC';e.currentTarget.style.borderColor='#172240';}}
-          >View Methodology</button>
-        </div>
-
-        <div style={{marginTop:'2.4rem',display:'flex',justifyContent:'center',animation:'fadeUp .5s ease .32s both'}}>
+        <div style={{position:'relative',zIndex:1}}>
           <div style={{
-            width:'min(440px, 82vw)',
-            padding:'1rem',
-            borderRadius:22,
-            background:'rgba(13,21,38,0.8)',
+            display:'inline-flex',alignItems:'center',gap:8,
+            padding:'5px 14px',borderRadius:999,marginBottom:'1.2rem',
+            background:'rgba(45,106,255,.08)',
             border:'1px solid rgba(45,106,255,.2)',
-            boxShadow:'0 24px 60px rgba(9,18,34,.5)',
+            animation:'fadeUp .4s ease',
           }}>
-            <img
-              src={kidneyImg}
-              alt="Kidney illustration"
-              style={{
-                display:'block',
-                width:'100%',
-                maxHeight:280,
-                objectFit:'cover',
-                borderRadius:16,
-              }}
-            />
+            <span style={{width:7,height:7,borderRadius:'50%',background:'#00E5B4',display:'inline-block',animation:'blink 1.5s ease infinite'}}/>
+            <span style={{fontSize:'.78rem',color:'#00E5B4',fontWeight:500,letterSpacing:'.04em'}}>LIVE</span>
+          </div>
+
+          <h1 style={{
+            fontFamily:'Space Grotesk,sans-serif',
+            fontSize:'clamp(2.2rem,5.5vw,3.8rem)',
+            fontWeight:800,lineHeight:1.08,letterSpacing:'-.035em',
+            marginBottom:'1.4rem',
+            animation:'fadeUp .5s ease .08s both',
+          }}>
+            <span style={{
+              backgroundImage:'linear-gradient(135deg,#2D6AFF 20%,#00E5B4 80%)',
+              backgroundSize:'200% 200%',
+              WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+              animation:'gradShift 4s ease infinite',
+            }}>Detect Kidney Disease</span>
+          </h1>
+
+          <p style={{
+            color:'#7A92BC',fontSize:'1.05rem',maxWidth:520,margin:'0 auto 2.4rem',
+            lineHeight:1.75,animation:'fadeUp .5s ease .16s both',
+          }}>
+            AI-powered CKD risk assessment for every age group — from newborns to seniors. Clinical values in, instant diagnosis out.
+          </p>
+
+          <div style={{display:'flex',gap:'1rem',justifyContent:'center',flexWrap:'wrap',animation:'fadeUp .5s ease .24s both'}}>
+            <button onClick={()=>nav('/predict')} style={{
+              padding:'13px 32px',borderRadius:10,border:'none',cursor:'pointer',
+              background:'linear-gradient(135deg,#2D6AFF,#00E5B4)',
+              color:'#fff',fontFamily:'Space Grotesk,sans-serif',
+              fontSize:'.95rem',fontWeight:700,letterSpacing:'-.01em',
+              boxShadow:'0 8px 28px rgba(45,106,255,.35)',
+              transition:'all .2s',
+            }}
+              onMouseOver={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 14px 36px rgba(45,106,255,.5)';}}
+              onMouseOut={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 8px 28px rgba(45,106,255,.35)';}}
+            >Start Analysis →</button>
+            <button onClick={()=>nav('/about')} style={{
+              padding:'13px 28px',borderRadius:10,border:'1px solid #172240',
+              background:'transparent',color:'#7A92BC',fontSize:'.95rem',cursor:'pointer',
+              transition:'all .2s',
+            }}
+              onMouseOver={e=>{e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.borderColor='#1F2F50';}}
+              onMouseOut={e=>{e.currentTarget.style.color='#7A92BC';e.currentTarget.style.borderColor='#172240';}}
+            >View Methodology</button>
           </div>
         </div>
       </div>
