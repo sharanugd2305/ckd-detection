@@ -1,5 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
+import kidneyImg from '../images/kidney_img.png';
 
 /* ── Animated counter ── */
 function Counter({to,suffix='',duration=1800}){
@@ -165,6 +166,29 @@ export default function Home(){
             onMouseOver={e=>{e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.borderColor='#1F2F50';}}
             onMouseOut={e=>{e.currentTarget.style.color='#7A92BC';e.currentTarget.style.borderColor='#172240';}}
           >View Methodology</button>
+        </div>
+
+        <div style={{marginTop:'2.4rem',display:'flex',justifyContent:'center',animation:'fadeUp .5s ease .32s both'}}>
+          <div style={{
+            width:'min(440px, 82vw)',
+            padding:'1rem',
+            borderRadius:22,
+            background:'rgba(13,21,38,0.8)',
+            border:'1px solid rgba(45,106,255,.2)',
+            boxShadow:'0 24px 60px rgba(9,18,34,.5)',
+          }}>
+            <img
+              src={kidneyImg}
+              alt="Kidney illustration"
+              style={{
+                display:'block',
+                width:'100%',
+                maxHeight:280,
+                objectFit:'cover',
+                borderRadius:16,
+              }}
+            />
+          </div>
         </div>
       </div>
 
