@@ -77,6 +77,18 @@ function AgeBadge({emoji,label,color}){
 
 export default function Home(){
   const nav=useNavigate();
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 40,
+        y: (e.clientY / window.innerHeight - 0.5) * 40
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const features=[
     {icon:'🧬',title:'Age-Aware Thresholds',    body:'Creatinine, GFR, and hemoglobin norms auto-adjust for infants, children, teens, and adults using pediatric nephrological standards.',accent:'#2D6AFF',delay:0},
@@ -105,7 +117,30 @@ export default function Home(){
   ];
 
   return(
-    <div style={{maxWidth:1120,margin:'0 auto',padding:'0 2rem 6rem'}}>
+    <div style={{maxWidth:1120,margin:'0 auto',padding:'0 2rem 6rem', position:'relative'}}>
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+          100% { transform: translateY(0px); }
+        }
+      `}</style>
+
+      {/* ── Background Global Glows ── */}
+      <div style={{
+        position:'fixed', top: -150, left: -150, width: 400, height: 400,
+        background:'radial-gradient(circle,rgba(45,106,255,.04) 0%,transparent 70%)',
+        pointerEvents:'none', borderRadius:'50%', zIndex:-1,
+        transform: `translate(${mousePos.x * -2}px, ${mousePos.y * -2}px)`,
+        transition: 'transform 0.2s ease-out',
+      }}/>
+      <div style={{
+        position:'fixed', bottom: -150, right: -150, width: 500, height: 500,
+        background:'radial-gradient(circle,rgba(0,229,180,.03) 0%,transparent 70%)',
+        pointerEvents:'none', borderRadius:'50%', zIndex:-1,
+        transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)`,
+        transition: 'transform 0.2s ease-out',
+      }}/>
 
       {/* ── Hero ── */}
       <div style={{paddingTop:'5rem',paddingBottom:'4rem',textAlign:'center',position:'relative',overflow:'hidden'}}>
@@ -122,8 +157,45 @@ export default function Home(){
         }}/>
 
         {/* Background glows */}
-        <div style={{position:'absolute',top:0,left:'20%',width:500,height:400,background:'radial-gradient(circle,rgba(45,106,255,.07) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
-        <div style={{position:'absolute',top:'15%',right:'10%',width:350,height:350,background:'radial-gradient(circle,rgba(0,229,180,.05) 0%,transparent 70%)',pointerEvents:'none',borderRadius:'50%'}}/>
+        <div style={{
+          position:'absolute',top:0,left:'20%',width:500,height:400,
+          transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
+          transition: 'transform 0.15s ease-out',
+          pointerEvents:'none'
+        }}>
+          <div style={{
+            width:'100%',height:'100%',
+            background:'radial-gradient(circle,rgba(45,106,255,.09) 0%,transparent 70%)',
+            borderRadius:'50%',
+            animation: 'float 6s ease-in-out infinite'
+          }}/>
+        </div>
+        <div style={{
+          position:'absolute',top:'15%',right:'10%',width:350,height:350,
+          transform: `translate(${mousePos.x * -1.2}px, ${mousePos.y * -1.2}px)`,
+          transition: 'transform 0.15s ease-out',
+          pointerEvents:'none'
+        }}>
+          <div style={{
+            width:'100%',height:'100%',
+            background:'radial-gradient(circle,rgba(0,229,180,.07) 0%,transparent 70%)',
+            borderRadius:'50%',
+            animation: 'float 8s ease-in-out infinite reverse'
+          }}/>
+        </div>
+        <div style={{
+          position:'absolute',top:'40%',left:'45%',width:400,height:400,
+          transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)`,
+          transition: 'transform 0.15s ease-out',
+          pointerEvents:'none'
+        }}>
+          <div style={{
+            width:'100%',height:'100%',
+            background:'radial-gradient(circle,rgba(155,109,255,.05) 0%,transparent 70%)',
+            borderRadius:'50%',
+            animation: 'float 10s ease-in-out infinite 1s'
+          }}/>
+        </div>
 
         <div style={{position:'relative',zIndex:1}}>
           <div style={{
