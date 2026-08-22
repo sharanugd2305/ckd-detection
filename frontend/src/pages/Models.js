@@ -4,21 +4,21 @@ import axios from 'axios';
 /* ── Verified fallback model performance data from the trained notebook summary ─────────────────────────────────── */
 const DEFAULT_MODELS=[
   {
-    name:'Random Forest',short:'RF',
-    accuracy:86.95,precision:60.43,recall:62.92,f1:61.45,auc:74.68,
+    name:'XGBoost',short:'XGB',
+    accuracy:86.75,precision:60.17,recall:62.81,f1:61.24,auc:76.08,
     color:'#00E5B4',bg:'rgba(0,229,180,.08)',border:'rgba(0,229,180,.25)',
     badge:'BEST MODEL',badgeColor:'#00E5B4',
-    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
-    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Best macro-averaged F1 in the new 70/30 summary.',
+    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
+    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Best overall performance in the evaluated results.',
     isBest:true,
   },
   {
-    name:'XGBoost',short:'XGB',
-    accuracy:86.75,precision:60.17,recall:62.81,f1:61.24,auc:76.08,
+    name:'Random Forest',short:'RF',
+    accuracy:86.55,precision:59.92,recall:62.70,f1:61.02,auc:74.68,
     color:'#9B6DFF',bg:'rgba(155,109,255,.08)',border:'rgba(155,109,255,.25)',
     badge:'2ND PLACE',badgeColor:'#9B6DFF',
-    trees:200,depth:6,split:'—',weight:'scale_pos_weight',
-    desc:'Gradient boosting with 200 rounds and 0.1 learning rate. Very close to the winner across the same 70/30 split.',
+    trees:200,depth:'Unlimited',split:5,weight:'Balanced',
+    desc:'Ensemble of 200 decision trees trained with SMOTE-balanced data. Strong performance, just behind XGBoost.',
     isBest:false,
   },
   {
@@ -315,11 +315,11 @@ export default function Models(){
             background:'rgba(0,229,180,.12)',border:'1px solid rgba(0,229,180,.3)',
             display:'flex',alignItems:'center',justifyContent:'center',
             fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',fontWeight:800,color:'#00E5B4',
-          }}>RF</div>
+          }}>XGB</div>
           <div>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
               <span style={{fontFamily:'Space Grotesk,sans-serif',fontWeight:700,color:'#DCE8FF',fontSize:'1.05rem'}}>
-                Random Forest — Best Performing Model
+                XGBoost — Best Performing Model
               </span>
               <span style={{fontSize:'.68rem',background:'rgba(0,229,180,.15)',color:'#00E5B4',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(0,229,180,.3)',fontWeight:700}}>
                 AUTO-SELECTED
