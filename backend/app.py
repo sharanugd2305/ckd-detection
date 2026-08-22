@@ -15,12 +15,8 @@ CORS(app)
 with open(os.path.join(MODEL_DIR, 'model_summary.json'), 'r', encoding='utf-8') as f:
     MODEL_SUMMARY = json.load(f)
 
-winner = MODEL_SUMMARY.get('winner', 'XGBoost')
-MODEL_ARTIFACTS = {
-    'Random Forest': 'rf_model.pkl',
-    'XGBoost': 'xgb_model.pkl',
-}
-model = joblib.load(os.path.join(MODEL_DIR, MODEL_ARTIFACTS.get(winner, 'xgb_model.pkl')))
+winner = 'XGBoost'
+model = joblib.load(os.path.join(MODEL_DIR, 'xgb_model.pkl'))
 scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))
 
 FEATURES = [
