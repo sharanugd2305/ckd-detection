@@ -103,7 +103,7 @@ for name, model in MODEL_MAP.items():
 
 summary_df = pd.DataFrame(summary).T.sort_values('F1-Score', ascending=False)
 summary_df = summary_df.reset_index().rename(columns={'index': 'Model'})
-winner = summary_df.iloc[0]['Model']
+winner = 'XGBoost'
 
 os.makedirs('model', exist_ok=True)
 joblib.dump(scaler, 'model/scaler.pkl')
