@@ -66,6 +66,60 @@ def normalize_user_data(raw_data):
 
     return normalized
 
+
+def get_defaulted_fields(raw_data):
+    if not isinstance(raw_data, dict):
+        return {}
+
+    defaulted = {}
+    for key in FEATURES:
+        value = raw_data.get(key)
+        if value is None or (isinstance(value, str) and value.strip() == ''):
+            defaulted[key] = FEATURE_MEDIANS.get(key, 0.0)
+    return defaulted
+
+
+def build_clinical_summary(data, pred):
+    age = float(data.get('Age', FEATURE_MEDIANS.get('Age', 55.0)))
+    gfr = float(data.get('GFR', FEATURE_MEDIANS.get('GFR', 90.0)))
+    creatinine = float(data.get('SerumCreatinine', FEATURE_MEDIANS.get('SerumCreatinine', 1.1)))
+    hba1c = float(data.get('HbA1c', FEATURE_MEDIANS.get('HbA1c', 5.8)))
+    protein = float(data.get('ProteinInUrine', FEATURE_MEDIANS.get('ProteinInUrine', 0.15)))
+    uti = float(data.get('UrinaryTractInfections', FEATURE_MEDIANS.get('UrinaryTractInfections', 0.0)))
+    family = float(data.get('FamilyHistoryKidneyDisease', FEATURE_MEDIANS.get('FamilyHistoryKidneyDisease', 0.0)))
+
+    factors = []
+    if age >= 60:
+        factors.append(f"older age ({int(age)} years)")
+    if gfr < 60:
+        factors.append(f"low GFR ({gfr:.1f} mL/min)")
+    if creatinine > 1.2:
+        factors.append(f"high creatinine ({creatinine:.1f} mg/dL)")
+    if hba1c > 6.5:
+        factors.append(f"elevated HbA1c ({hba1c:.1f}%)")
+    if protein > 0.15:
+        factors.append(f"protein in urine ({protein:.2f} g/day)")
+    if uti >= 2:
+        factors.append(f"recurrent UTIs ({int(uti)} episodes)")
+    if family == 1:
+        factors.append("family history of kidney disease")
+
+    if pred == 1:
+        if factors:
+            summary = "Main drivers: " + ", ".join(factors[:4]) + ". This pattern points to CKD risk."
+        else:
+            summary = "The model is predicting CKD mainly because of the entered clinical pattern and the filled baseline values."
+    else:
+        if factors:
+            summary = "There are some risk signals, but the overall model result remains low risk because the entered profile is still below the CKD threshold."
+        else:
+            summary = "No major CKD warning signs were identified from the entered values, and missing fields were filled with dataset medians for the model."
+
+    return {
+        'risk_factors': factors,
+        'interpretation': summary,
+    }
+
 # ── Age Group Classification ───────────────────────────────────────────────────
 def get_age_group(age):
     if   age < 2:  return "infant",     "Infant (0-2 years)"
@@ -272,6 +326,7 @@ def predict():
     if not isinstance(raw_data, dict):
         return jsonify({'error': 'Request body must be a JSON object.'}), 400
 
+    filled_defaults = get_defaulted_fields(raw_data)
     data = {**raw_data, **normalize_user_data(raw_data)}
     age = float(data.get('Age', FEATURE_MEDIANS.get('Age', 30.0)))
 
@@ -287,22 +342,26 @@ def predict():
     risk_level, risk_color     = get_risk_level(prob)
     early_warnings             = get_early_warnings(data, age_group, age, norms)
     recommendations            = get_recommendations(data, pred, age_group, age, norms)
+    clinical_summary           = build_clinical_summary(data, pred)
 
     return jsonify({
-        'prediction'     : pred,
-        'label'          : 'CKD Detected' if pred == 1 else 'No CKD Detected',
-        'probability'    : round(prob * 100, 1),
-        'risk_level'     : risk_level,
-        'risk_color'     : risk_color,
-        'ckd_stage'      : stage,
-        'stage_desc'     : stage_desc,
-        'age_group'      : age_group,
-        'age_label'      : age_label,
-        'early_warnings' : early_warnings,
-        'recommendations': recommendations,
-        'is_pediatric'   : age < 18,
-        'is_young'       : age < 40,
-        'model_name'     : MODEL_SUMMARY['winner'],
+        'prediction'      : pred,
+        'label'           : 'CKD Detected' if pred == 1 else 'No CKD Detected',
+        'probability'     : round(prob * 100, 1),
+        'risk_level'      : risk_level,
+        'risk_color'      : risk_color,
+        'ckd_stage'       : stage,
+        'stage_desc'      : stage_desc,
+        'age_group'       : age_group,
+        'age_label'       : age_label,
+        'early_warnings'  : early_warnings,
+        'recommendations' : recommendations,
+        'interpretation'  : clinical_summary['interpretation'],
+        'risk_factors'    : clinical_summary['risk_factors'],
+        'filled_defaults' : filled_defaults,
+        'is_pediatric'    : age < 18,
+        'is_young'        : age < 40,
+        'model_name'      : MODEL_SUMMARY['winner'],
     })
 
 if __name__ == '__main__':
