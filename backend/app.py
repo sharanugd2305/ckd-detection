@@ -48,12 +48,48 @@ except Exception:
     }
 
 
+def calculate_bmi_from_height_weight(raw_data):
+    if not isinstance(raw_data, dict):
+        return None
+
+    height = raw_data.get('HeightCm')
+    weight = raw_data.get('WeightKg')
+
+    if height is None or weight is None:
+        return None
+
+    try:
+        height_cm = float(height)
+        weight_kg = float(weight)
+    except (TypeError, ValueError):
+        return None
+
+    if height_cm <= 0 or weight_kg <= 0:
+        return None
+
+    height_m = height_cm / 100.0
+    return weight_kg / (height_m * height_m)
+
+
 def normalize_user_data(raw_data):
     if not isinstance(raw_data, dict):
         return {}
 
     normalized = {}
     for key in FEATURES:
+        if key == 'BMI':
+            value = raw_data.get(key)
+            if value is None or value == '':
+                computed_bmi = calculate_bmi_from_height_weight(raw_data)
+                normalized[key] = computed_bmi if computed_bmi is not None else FEATURE_MEDIANS.get(key, 25.0)
+                continue
+            try:
+                normalized[key] = float(value)
+            except (TypeError, ValueError):
+                computed_bmi = calculate_bmi_from_height_weight(raw_data)
+                normalized[key] = computed_bmi if computed_bmi is not None else FEATURE_MEDIANS.get(key, 25.0)
+            continue
+
         value = raw_data.get(key)
         if value is None or value == '':
             normalized[key] = FEATURE_MEDIANS.get(key, 0.0)
