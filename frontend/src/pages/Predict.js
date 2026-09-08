@@ -15,8 +15,17 @@ const FIELDS=[
   {key:'FamilyHistoryKidneyDisease', label:'Family History',                unit:'0 or 1', min:0,  max:1,  step:1,   normal:'0 = No, 1 = Yes',  desc:'Genetic predisposition is a key CKD risk factor'},
 ];
 
+const BMI_EXTRA_FIELDS=[
+  {key:'HeightCm', label:'Height', unit:'cm', min:50, max:250, step:.1, normal:'150–180 cm', desc:'Used to calculate BMI if BMI is unknown'},
+  {key:'WeightKg', label:'Weight', unit:'kg', min:20, max:250, step:.1, normal:'40–100 kg', desc:'Used with height to calculate BMI automatically'},
+];
+
 const ALL_KEYS=FIELDS.map(f=>f.key);
-const init=Object.fromEntries(ALL_KEYS.map(k=>[k,'']));
+const BMI_EXTRA_KEYS=BMI_EXTRA_FIELDS.map(f=>f.key);
+const init={
+  ...Object.fromEntries(ALL_KEYS.map(k=>[k,''])),
+  ...Object.fromEntries(BMI_EXTRA_KEYS.map(k=>[k,''])),
+};
 
 const SECTION_FIELDS=[
   {title:'Personal Details', subtitle:'Patient profile and background', keys:['Age','BMI','FamilyHistoryKidneyDisease']},
@@ -103,6 +112,18 @@ export default function Predict(){
       const payload = Object.fromEntries(
         ALL_KEYS.map((key) => [key, form[key] === '' ? null : Number(form[key])])
       );
+
+      if (payload.BMI === null && form.HeightCm !== '' && form.WeightKg !== '') {
+        const heightM = Number(form.HeightCm) / 100;
+        const weightKg = Number(form.WeightKg);
+        if (heightM > 0) {
+          payload.BMI = weightKg / (heightM * heightM);
+        }
+      }
+
+      payload.HeightCm = form.HeightCm === '' ? null : Number(form.HeightCm);
+      payload.WeightKg = form.WeightKg === '' ? null : Number(form.WeightKg);
+
       const res = await axios.post('http://localhost:5000/predict', payload);
       setResult(res.data);
       setTimeout(()=>document.getElementById('result-section')?.scrollIntoView({behavior:'smooth'}),150);
@@ -189,6 +210,50 @@ export default function Predict(){
                   {section.keys.map((key)=>{
                     const f = FIELDS.find(field => field.key === key);
                     if (!f) return null;
+
+                    if (f.key === 'BMI') {
+                      return (
+                        <div key={f.key} style={{
+                          background:'#060B18',
+                          border:`1px solid ${form[f.key]!=='' || form.HeightCm!=='' || form.WeightKg!=='' ? '#1F2F50' : '#172240'}`,
+                          borderRadius:10,padding:'1rem',transition:'border-color .2s',
+                        }}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                            <label style={{fontSize:'.8rem',color:'#7A92BC',fontWeight:500}}>{f.label}</label>
+                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'#3A506A',background:'#0A1020',padding:'2px 7px',borderRadius:4}}>{f.unit}</span>
+                          </div>
+                          <input
+                            type="number" min={f.min} max={f.max} step={f.step}
+                            value={form[f.key]} placeholder="—"
+                            onChange={e=>set(f.key,e.target.value)}
+                            style={iStyle}
+                            onFocus={e=>e.target.style.borderColor='#2D6AFF'}
+                            onBlur={e=>e.target.style.borderColor=form[f.key]!=='' || form.HeightCm!=='' || form.WeightKg!=='' ? '#1F2F50' : '#172240'}
+                          />
+
+                          <div style={{marginTop:12, display:'grid', gridTemplateColumns:'1fr 1fr', gap:8}}>
+                            {BMI_EXTRA_FIELDS.map((extra) => (
+                              <div key={extra.key} style={{background:'#0A1020', border:'1px solid #172240', borderRadius:8, padding:'8px 10px'}}>
+                                <div style={{fontSize:'.66rem', color:'#7A92BC', marginBottom:4}}>{extra.label}</div>
+                                <input
+                                  type="number" min={extra.min} max={extra.max} step={extra.step}
+                                  value={form[extra.key]} placeholder={extra.unit}
+                                  onChange={e=>set(extra.key,e.target.value)}
+                                  style={{width:'100%', background:'transparent', border:'none', outline:'none', color:'#DCE8FF', fontFamily:'JetBrains Mono,monospace', fontSize:'.82rem'}}
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{display:'flex',justifyContent:'space-between',marginTop:8,gap:6}}>
+                            <span style={{fontSize:'.67rem',color:'#3A506A',lineHeight:1.4,flex:1}}>
+                              {form[f.key] === '' ? 'If BMI is unknown, height and weight will be used to calculate it automatically.' : f.desc}
+                            </span>
+                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'#2D6AFF',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <div key={f.key} style={{
