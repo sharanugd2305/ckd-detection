@@ -3,11 +3,13 @@ import os
 
 import joblib
 import numpy as np
+import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, 'model')
+DATASET_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', 'data', 'ckd_1659.csv'))
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +27,44 @@ FEATURES = [
     'ProteinInUrine', 'UrinaryTractInfections',
     'FamilyHistoryKidneyDisease'
 ]
+
+try:
+    DATASET = pd.read_csv(DATASET_PATH)
+    FEATURE_MEDIANS = DATASET[FEATURES].median(numeric_only=False).to_dict()
+    FEATURE_MEDIANS = {k: float(v) if pd.notna(v) else 0.0 for k, v in FEATURE_MEDIANS.items()}
+except Exception:
+    FEATURE_MEDIANS = {
+        'Age': 55.0,
+        'BMI': 25.0,
+        'HbA1c': 5.8,
+        'SerumCreatinine': 1.1,
+        'BUNLevels': 18.0,
+        'GFR': 90.0,
+        'HemoglobinLevels': 12.5,
+        'CholesterolTotal': 180.0,
+        'ProteinInUrine': 0.15,
+        'UrinaryTractInfections': 0.0,
+        'FamilyHistoryKidneyDisease': 0.0,
+    }
+
+
+def normalize_user_data(raw_data):
+    if not isinstance(raw_data, dict):
+        return {}
+
+    normalized = {}
+    for key in FEATURES:
+        value = raw_data.get(key)
+        if value is None or value == '':
+            normalized[key] = FEATURE_MEDIANS.get(key, 0.0)
+            continue
+        try:
+            num_value = float(value)
+        except (TypeError, ValueError):
+            num_value = FEATURE_MEDIANS.get(key, 0.0)
+        normalized[key] = num_value
+
+    return normalized
 
 # ── Age Group Classification ───────────────────────────────────────────────────
 def get_age_group(age):
@@ -228,14 +268,18 @@ def model_info():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.json
-    age  = float(data.get('Age', 30))
+    raw_data = request.get_json(silent=True) or {}
+    if not isinstance(raw_data, dict):
+        return jsonify({'error': 'Request body must be a JSON object.'}), 400
 
-    features = [float(data[f]) for f in FEATURES]
+    data = {**raw_data, **normalize_user_data(raw_data)}
+    age = float(data.get('Age', FEATURE_MEDIANS.get('Age', 30.0)))
+
+    features = [float(data.get(f, FEATURE_MEDIANS.get(f, 0.0))) for f in FEATURES]
     scaled   = scaler.transform([features])
     pred     = int(model.predict(scaled)[0])
     prob     = float(model.predict_proba(scaled)[0][1])
-    gfr      = float(data.get('GFR', 90))
+    gfr      = float(data.get('GFR', FEATURE_MEDIANS.get('GFR', 90.0)))
 
     age_group, age_label       = get_age_group(age)
     norms                      = get_normal_ranges(age)
