@@ -304,6 +304,22 @@ export default function Predict(){
             </span>
           </div>
 
+          {(result.interpretation || result.risk_factors?.length || result.filled_defaults) && (
+            <div style={{background:'rgba(45,106,255,.06)', border:'1px solid rgba(45,106,255,.2)', borderRadius:14, padding:'1rem 1.2rem', marginBottom:'1rem'}}>
+              <div style={{fontSize:'.68rem', color:'#3A506A', fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', marginBottom:8}}>Live interpretation</div>
+              <div style={{color:'#DCE8FF', lineHeight:1.7, fontSize:'.9rem'}}>{result.interpretation}</div>
+              {result.risk_factors?.length > 0 && (
+                <div style={{marginTop:10, display:'flex', flexWrap:'wrap', gap:8}}>
+                  {result.risk_factors.map((factor, idx) => (
+                    <span key={idx} style={{background:'rgba(255,170,44,.08)', border:'1px solid rgba(255,170,44,.17)', color:'#FFAA2C', borderRadius:999, padding:'5px 10px', fontSize:'.72rem'}}>
+                      {factor}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Pediatric banner */}
           {result.is_pediatric&&(
             <div style={{background:'rgba(155,109,255,.08)',border:'1px solid rgba(155,109,255,.25)',borderRadius:12,padding:'12px 18px',marginBottom:'1rem',display:'flex',alignItems:'center',gap:12}}>
