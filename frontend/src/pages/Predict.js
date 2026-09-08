@@ -244,7 +244,7 @@ export default function Predict(){
                   <span style={{width:16,height:16,border:'2px solid rgba(255,255,255,.3)',borderTop:'2px solid #fff',borderRadius:'50%',display:'inline-block',animation:'spin .8s linear infinite'}}/>
                   Analysing with {modelInfo?.winner || 'Random Forest'}...
                 </span>
-              ):`Run CKD Analysis (${modelInfo?.winner || 'Random Forest'}) →`}
+              ):`Run CKD Analysis →`}
             </button>
             <button onClick={reset} style={{padding:'14px 24px',borderRadius:10,border:'1px solid #172240',background:'transparent',color:'#7A92BC',fontSize:'1rem',cursor:'pointer',transition:'all .2s'}}
               onMouseOver={e=>{e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.borderColor='#1F2F50';}}
