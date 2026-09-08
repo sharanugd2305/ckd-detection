@@ -96,14 +96,19 @@ export default function Predict(){
   const set=(k,v)=>setForm(p=>({...p,[k]:v}));
 
   const submit=async()=>{
-    const empty=ALL_KEYS.filter(k=>form[k]==='');
-    if(empty.length){setError(`${empty.length} field${empty.length>1?'s':''} remaining — please fill in all values`);return;}
-    setError('');setLoading(true);setResult(null);
+    setError('');
+    setLoading(true);
+    setResult(null);
     try{
-      const res=await axios.post('http://localhost:5000/predict',form);
+      const payload = Object.fromEntries(
+        ALL_KEYS.map((key) => [key, form[key] === '' ? null : Number(form[key])])
+      );
+      const res = await axios.post('http://localhost:5000/predict', payload);
       setResult(res.data);
       setTimeout(()=>document.getElementById('result-section')?.scrollIntoView({behavior:'smooth'}),150);
-    }catch{setError('Cannot reach backend. Make sure Flask is running on port 5000.');}
+    }catch{
+      setError('Cannot reach backend. Make sure Flask is running on port 5000.');
+    }
     setLoading(false);
   };
 
