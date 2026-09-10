@@ -129,22 +129,29 @@ export default function Home() {
           50% { transform: scale(1.04); }
           100% { transform: scale(1); }
         }
+        @keyframes pulseGlow {
+          0% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 0.6; transform: scale(1); }
+        }
       `}</style>
 
       {/* ── Background Global Glows & Image ── */}
       <div style={{
-        position: 'fixed', top: -150, left: -150, width: 400, height: 400,
-        background: 'radial-gradient(circle,rgba(45,106,255,.04) 0%,transparent 70%)',
+        position: 'fixed', top: -150, left: -150, width: 500, height: 500,
+        background: 'radial-gradient(circle,rgba(45,106,255,.06) 0%,transparent 70%)',
         pointerEvents: 'none', borderRadius: '50%', zIndex: -1,
         transform: `translate(${mousePos.x * -2}px, ${mousePos.y * -2}px)`,
         transition: 'transform 0.2s ease-out',
+        animation: 'pulseGlow 4s ease-in-out infinite'
       }} />
       <div style={{
-        position: 'fixed', bottom: -150, right: -150, width: 500, height: 500,
-        background: 'radial-gradient(circle,rgba(0,229,180,.03) 0%,transparent 70%)',
+        position: 'fixed', bottom: -150, right: -150, width: 600, height: 600,
+        background: 'radial-gradient(circle,rgba(0,229,180,.05) 0%,transparent 70%)',
         pointerEvents: 'none', borderRadius: '50%', zIndex: -1,
         transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)`,
         transition: 'transform 0.2s ease-out',
+        animation: 'pulseGlow 5s ease-in-out infinite reverse'
       }} />
       {/* ── Kidney Background ── */}
       <div style={{
