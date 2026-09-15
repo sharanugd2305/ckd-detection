@@ -3,31 +3,45 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:       #060B18;
-  --bg2:      #0A1020;
-  --card:     #0D1526;
-  --card2:    #111D33;
-  --border:   #172240;
-  --border2:  #1F2F50;
-  --blue:     #2D6AFF;
-  --blue-dim: rgba(45,106,255,0.12);
-  --teal:     #00E5B4;
-  --teal-dim: rgba(0,229,180,0.10);
-  --red:      #FF3D57;
-  --red-dim:  rgba(255,61,87,0.10);
-  --amber:    #FFAA2C;
-  --amber-dim:rgba(255,170,44,0.10);
-  --violet:   #9B6DFF;
-  --text:     #DCE8FF;
-  --text2:    #7A92BC;
-  --text3:    #3A506A;
+  /* ── Backgrounds ───────── */
+  --bg:       #07081A;
+  --bg2:      #0C0E22;
+  --card:     #10122A;
+  --card2:    #141730;
+  --border:   #1E2247;
+  --border2:  #2A3060;
+
+  /* ── Brand / Accent ─────── */
+  --blue:     #5B7FFF;
+  --blue-dim: rgba(91,127,255,0.13);
+  --teal:     #00D4A8;
+  --teal-dim: rgba(0,212,168,0.11);
+  --red:      #FF4D6A;
+  --red-dim:  rgba(255,77,106,0.11);
+  --amber:    #F5A623;
+  --amber-dim:rgba(245,166,35,0.11);
+  --violet:   #A97FFF;
+  --violet-dim:rgba(169,127,255,0.12);
+  --emerald:  #10B981;
+  --rose:     #F43F5E;
+
+  /* ── Text ───────────────── */
+  --text:     #E8EEFF;
+  --text2:    #8BA0C8;
+  --text3:    #4A5E80;
+
+  /* ── Typography ─────────── */
   --mono:     'JetBrains Mono',monospace;
   --disp:     'Space Grotesk',sans-serif;
   --body:     'Inter',sans-serif;
+
+  /* ── Shape & shadow ─────── */
   --r:        12px;
   --r2:       18px;
   --r3:       24px;
-  --shadow:   0 24px 48px rgba(0,0,0,0.5);
+  --shadow:   0 24px 56px rgba(0,0,0,0.6);
+  --glow-blue: 0 0 32px rgba(91,127,255,0.22);
+  --glow-teal: 0 0 32px rgba(0,212,168,0.18);
 }
 
 html{scroll-behavior:smooth}
@@ -38,6 +52,9 @@ body{
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(91,127,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(169,127,255,0.08) 0%, transparent 55%);
 }
 
 /* Subtle grid */
@@ -45,9 +62,9 @@ body::before{
   content:'';
   position:fixed;inset:0;
   background-image:
-    linear-gradient(rgba(45,106,255,0.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(45,106,255,0.025) 1px,transparent 1px);
-  background-size:48px 48px;
+    linear-gradient(rgba(91,127,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(91,127,255,0.03) 1px,transparent 1px);
+  background-size:52px 52px;
   pointer-events:none;z-index:0;
 }
 #root{position:relative;z-index:1}
