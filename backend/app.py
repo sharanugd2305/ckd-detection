@@ -361,6 +361,13 @@ def predict():
     raw_data = request.get_json(silent=True) or {}
     if not isinstance(raw_data, dict):
         return jsonify({'error': 'Request body must be a JSON object.'}), 400
+    provided_features = [feature for feature in FEATURES if raw_data.get(feature) not in (None, '')]
+    if len(provided_features) < 5:
+        missing_features = [feature for feature in FEATURES if raw_data.get(feature) in (None, '')]
+        return jsonify({
+            'error': 'At least 5 clinical values are required before prediction.',
+            'missing_features': missing_features,
+        }), 400
 
     filled_defaults = get_defaulted_fields(raw_data)
     data = {**raw_data, **normalize_user_data(raw_data)}
