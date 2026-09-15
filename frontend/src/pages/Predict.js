@@ -97,6 +97,7 @@ function Bar({pct,color='#2D6AFF'}){
 }
 
 export default function Predict(){
+  const MIN_REQUIRED_FIELDS=5;
   const [form,setForm]=useState(init);
   const [result,setResult]=useState(null);
   const [simValues,setSimValues]=useState(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[field.key,field.default])));
@@ -138,8 +139,8 @@ export default function Predict(){
 
   const submit=async()=>{
     setError('');
-    if(ALL_KEYS.every((key)=>form[key]==='')){
-      setError('Enter at least one clinical value before running the analysis.');
+    if(ALL_KEYS.filter((key)=>form[key]!=='').length<MIN_REQUIRED_FIELDS){
+      setError(`Enter at least ${MIN_REQUIRED_FIELDS} clinical values before running the analysis.`);
       return;
     }
     setLoading(true);
