@@ -23,6 +23,13 @@ const BMI_EXTRA_FIELDS=[
 
 const ALL_KEYS=FIELDS.map(f=>f.key);
 const BMI_EXTRA_KEYS=BMI_EXTRA_FIELDS.map(f=>f.key);
+const SIMULATOR_FIELDS=[
+  {key:'GFR',label:'GFR',unit:'mL/min',min:0,max:150,step:1,default:90},
+  {key:'SerumCreatinine',label:'Serum Creatinine',unit:'mg/dL',min:0,max:10,step:.01,default:1.1},
+  {key:'HbA1c',label:'HbA1c',unit:'%',min:0,max:15,step:.1,default:5.8},
+  {key:'HemoglobinLevels',label:'Hemoglobin',unit:'g/dL',min:0,max:20,step:.1,default:12.5},
+  {key:'ProteinInUrine',label:'Protein in Urine',unit:'g/day',min:0,max:5,step:.01,default:.15},
+];
 const init={
   ...Object.fromEntries(ALL_KEYS.map(k=>[k,''])),
   ...Object.fromEntries(BMI_EXTRA_KEYS.map(k=>[k,''])),
@@ -92,6 +99,10 @@ function Bar({pct,color='#2D6AFF'}){
 export default function Predict(){
   const [form,setForm]=useState(init);
   const [result,setResult]=useState(null);
+  const [simValues,setSimValues]=useState(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[field.key,field.default])));
+  const [simResult,setSimResult]=useState(null);
+  const [simLoading,setSimLoading]=useState(false);
+  const [simError,setSimError]=useState('');
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
   const [modelInfo,setModelInfo]=useState(null);
@@ -105,28 +116,37 @@ export default function Predict(){
   const progress=useMemo(()=>Math.round((ALL_KEYS.filter(k=>form[k]!=='').length/ALL_KEYS.length)*100),[form]);
   const set=(k,v)=>setForm(p=>({...p,[k]:v}));
 
+  const buildPayload=(values,overrides={})=>{
+    const payload=Object.fromEntries(
+      ALL_KEYS.map((key)=>{
+        const value=overrides[key] ?? values[key];
+        return [key,value===''||value===undefined?null:Number(value)];
+      })
+    );
+
+    const height=values.HeightCm;
+    const weight=values.WeightKg;
+    if(payload.BMI===null&&height!==''&&weight!==''){
+      const heightM=Number(height)/100;
+      if(heightM>0) payload.BMI=Number(weight)/(heightM*heightM);
+    }
+
+    payload.HeightCm=values.HeightCm===''?null:Number(values.HeightCm);
+    payload.WeightKg=values.WeightKg===''?null:Number(values.WeightKg);
+    return payload;
+  };
+
   const submit=async()=>{
     setError('');
     setLoading(true);
     setResult(null);
     try{
-      const payload = Object.fromEntries(
-        ALL_KEYS.map((key) => [key, form[key] === '' ? null : Number(form[key])])
-      );
-
-      if (payload.BMI === null && form.HeightCm !== '' && form.WeightKg !== '') {
-        const heightM = Number(form.HeightCm) / 100;
-        const weightKg = Number(form.WeightKg);
-        if (heightM > 0) {
-          payload.BMI = weightKg / (heightM * heightM);
-        }
-      }
-
-      payload.HeightCm = form.HeightCm === '' ? null : Number(form.HeightCm);
-      payload.WeightKg = form.WeightKg === '' ? null : Number(form.WeightKg);
-
-      const res = await axios.post('http://localhost:5000/predict', payload);
+      const res = await axios.post('http://localhost:5000/predict',buildPayload(form));
       setResult(res.data);
+      setSimResult(null);
+      setSimValues(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[
+        field.key,form[field.key]===''?field.default:Number(form[field.key])
+      ])));
       setTimeout(()=>document.getElementById('result-section')?.scrollIntoView({behavior:'smooth'}),150);
     }catch{
       setError('Cannot reach backend. Make sure Flask is running on port 5000.');
@@ -134,7 +154,26 @@ export default function Predict(){
     setLoading(false);
   };
 
-  const reset=()=>{setForm(init);setResult(null);setError('');};
+  const runSimulation=async()=>{
+    if(!result) return;
+    setSimLoading(true);
+    setSimError('');
+    try{
+      const res=await axios.post('http://localhost:5000/predict',buildPayload(form,simValues));
+      setSimResult(res.data);
+    }catch{
+      setSimError('Simulation unavailable. Make sure Flask is running on port 5000.');
+    }
+    setSimLoading(false);
+  };
+
+  const reset=()=>{
+    setForm(init);
+    setResult(null);
+    setSimResult(null);
+    setSimError('');
+    setError('');
+  };
 
   const normalizeStageName = (value='') => String(value)
     .replace(/[–—−]/g, '-')
@@ -497,6 +536,73 @@ export default function Predict(){
                 }}/>
               </div>
             </div>
+          </div>
+
+          {/* What-if simulator */}
+          <div style={{background:'#0D1526',border:'1px solid rgba(155,109,255,.28)',borderRadius:16,padding:'1.5rem',marginBottom:'1.2rem'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:16,flexWrap:'wrap',marginBottom:'1.2rem'}}>
+              <div>
+                <div style={{fontSize:'.68rem',color:'#9B6DFF',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:6}}>What-If Simulator</div>
+                <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.15rem',color:'#DCE8FF',marginBottom:5}}>Explore a different clinical profile</h3>
+                <p style={{color:'#7A92BC',fontSize:'.8rem',lineHeight:1.6,maxWidth:590}}>
+                  Adjust selected values to see how the prediction model responds. This creates a temporary scenario and does not change the original report.
+                </p>
+              </div>
+              <span style={{fontSize:'.7rem',color:'#9B6DFF',background:'rgba(155,109,255,.1)',border:'1px solid rgba(155,109,255,.25)',borderRadius:999,padding:'5px 10px',whiteSpace:'nowrap'}}>Model exploration</span>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem 1.5rem'}}>
+              {SIMULATOR_FIELDS.map((field)=>{
+                const value=simValues[field.key];
+                return(
+                  <label key={field.key} style={{display:'block'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:7}}>
+                      <span style={{fontSize:'.78rem',color:'#7A92BC'}}>{field.label}</span>
+                      <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.75rem',color:'#DCE8FF'}}>{Number(value).toFixed(field.step<.1?2:field.step<1?1:0)} <span style={{color:'#3A506A'}}>{field.unit}</span></span>
+                    </div>
+                    <input
+                      type="range"
+                      min={field.min}
+                      max={field.max}
+                      step={field.step}
+                      value={value}
+                      onChange={e=>setSimValues(previous=>({...previous,[field.key]:Number(e.target.value)}))}
+                      style={{width:'100%',accentColor:'#9B6DFF',cursor:'pointer'}}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+
+            <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',marginTop:'1.4rem'}}>
+              <button onClick={runSimulation} disabled={simLoading} style={{padding:'11px 18px',border:'none',borderRadius:9,background:simLoading?'#172240':'linear-gradient(135deg,#9B6DFF,#2D6AFF)',color:'#fff',fontWeight:700,fontSize:'.85rem',cursor:simLoading?'not-allowed':'pointer',boxShadow:simLoading?'none':'0 8px 20px rgba(155,109,255,.25)'}}>
+                {simLoading?'Running scenario...':'Run Scenario →'}
+              </button>
+              <span style={{color:'#3A506A',fontSize:'.72rem'}}>Original report: {result.probability}% risk</span>
+            </div>
+
+            {simError&&<div style={{marginTop:'1rem',color:'#FF3D57',fontSize:'.8rem'}}>{simError}</div>}
+
+            {simResult&&(
+              <div style={{marginTop:'1.3rem',paddingTop:'1.2rem',borderTop:'1px solid #172240'}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.75rem'}}>
+                  {[
+                    {label:'Original risk',value:`${result.probability}%`,color:'#7A92BC'},
+                    {label:'Scenario risk',value:`${simResult.probability}%`,color:simResult.risk_color||'#9B6DFF'},
+                    {label:'Change',value:`${simResult.probability-result.probability>0?'+':''}${(simResult.probability-result.probability).toFixed(1)} pts`,color:simResult.probability>result.probability?'#FF3D57':'#00E5B4'},
+                  ].map((item)=>(
+                    <div key={item.label} style={{background:'#060B18',border:'1px solid #172240',borderRadius:10,padding:'11px',textAlign:'center'}}>
+                      <div style={{fontSize:'.66rem',color:'#3A506A',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:5}}>{item.label}</div>
+                      <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.25rem',fontWeight:800,color:item.color}}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginTop:'.9rem',flexWrap:'wrap'}}>
+                  <span style={{color:'#7A92BC',fontSize:'.8rem'}}>Scenario classification: <strong style={{color:simResult.risk_color||'#DCE8FF'}}>{simResult.risk_level}</strong></span>
+                  <span style={{color:'#7A92BC',fontSize:'.8rem'}}>Estimated stage: <strong style={{color:'#DCE8FF'}}>{simResult.ckd_stage||simResult.stage_desc||'Normal range'}</strong></span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Stats */}
