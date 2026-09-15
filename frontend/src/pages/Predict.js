@@ -138,6 +138,10 @@ export default function Predict(){
 
   const submit=async()=>{
     setError('');
+    if(ALL_KEYS.every((key)=>form[key]==='')){
+      setError('Enter at least one clinical value before running the analysis.');
+      return;
+    }
     setLoading(true);
     setResult(null);
     try{
