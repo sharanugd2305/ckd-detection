@@ -63,6 +63,9 @@ export default function Navbar(){
         })}
         {clerkConfigured&&(
           <>
+            <SignedIn>
+              <Link to="/dashboard" style={{textDecoration:'none',padding:'7px 14px',borderRadius:8,fontSize:'.875rem',fontWeight:pathname==='/dashboard'?600:400,color:pathname==='/dashboard'?'#DCE8FF':'#7A92BC',background:pathname==='/dashboard'?'rgba(0,229,180,.1)':'transparent',border:`1px solid ${pathname==='/dashboard'?'rgba(0,229,180,.25)':'transparent'}`}}>Dashboard</Link>
+            </SignedIn>
             <SignedOut>
               <SignInButton mode="modal">
                 <button type="button" style={{padding:'7px 12px',border:'1px solid #1F2F50',borderRadius:8,background:'transparent',color:'#DCE8FF',fontSize:'.82rem',cursor:'pointer'}}>Sign in</button>
