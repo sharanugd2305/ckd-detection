@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Predict from './pages/Predict';
 import Models from './pages/Models';
 import About from './pages/About';
+import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Routes>
         <Route path="/"        element={<Home />} />
         <Route path="/predict" element={<Predict />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/models"  element={<Models />} />
         <Route path="/about"   element={<About />} />
       </Routes>
