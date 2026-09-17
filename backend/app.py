@@ -11,7 +11,7 @@ from clerk_backend_api.security.types import AuthenticateRequestOptions
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
-from sqlalchemy import Column, DateTime, Float, Integer, JSON, String, create_engine, desc
+from sqlalchemy import Column, DateTime, Float, Integer, JSON, String, create_engine, desc, inspect, text
 from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -48,9 +48,15 @@ class PredictionHistory(Base):
     label = Column(String(80), nullable=False)
     risk_level = Column(String(80), nullable=False)
     ckd_stage = Column(String(40), nullable=True)
+    result_details = Column(JSON, nullable=True)
 
 
 Base.metadata.create_all(engine)
+
+# Keep deployments created before detailed history was added compatible.
+if 'result_details' not in {column['name'] for column in inspect(engine).get_columns('prediction_history')}:
+    with engine.begin() as connection:
+        connection.execute(text('ALTER TABLE prediction_history ADD COLUMN result_details JSON'))
 
 
 @app.teardown_appcontext
@@ -458,6 +464,7 @@ def predict():
     raw_data = request.get_json(silent=True) or {}
     if not isinstance(raw_data, dict):
         return jsonify({'error': 'Request body must be a JSON object.'}), 400
+    save_history = raw_data.pop('_save_history', True)
     provided_features = [feature for feature in FEATURES if raw_data.get(feature) not in (None, '')]
     if len(provided_features) < 5:
         missing_features = [feature for feature in FEATURES if raw_data.get(feature) in (None, '')]
@@ -505,7 +512,7 @@ def predict():
         'history_saved'   : False,
     }
 
-    if g.clerk_user_id:
+    if g.clerk_user_id and save_history:
         history = PredictionHistory(
             clerk_user_id=g.clerk_user_id,
             inputs={key: raw_data.get(key) for key in FEATURES},
@@ -513,6 +520,7 @@ def predict():
             label=response_data['label'],
             risk_level=risk_level,
             ckd_stage=stage,
+            result_details=response_data,
         )
         db_session = Session()
         db_session.add(history)
@@ -537,6 +545,7 @@ def prediction_history():
             'label': record.label,
             'risk_level': record.risk_level,
             'ckd_stage': record.ckd_stage,
+            'result_details': record.result_details,
         }
         for record in records
     ])
