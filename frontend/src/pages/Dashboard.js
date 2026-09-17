@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { jsPDF } from 'jspdf';
 import { Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-react';
 
@@ -60,6 +61,72 @@ function ResultDetails({ record }) {
   );
 }
 
+function downloadRecordPdf(record) {
+  const details = record.result_details || {};
+  const inputs = record.inputs || {};
+  const warnings = details.early_warnings || [];
+  const recommendations = details.recommendations || [];
+  const doc = new jsPDF();
+  const generatedAt = new Date(record.created_at || Date.now()).toLocaleString();
+
+  doc.setFillColor(18, 23, 36);
+  doc.rect(0, 0, 210, 28, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.text('CKD Risk Assessment Report', 14, 18);
+
+  doc.setTextColor(40, 60, 80);
+  doc.setFontSize(10);
+  doc.text(`Generated: ${generatedAt}`, 14, 36);
+  doc.text(`Assessment: ${record.label}`, 14, 42);
+
+  let y = 56;
+  const addSection = (title, lines) => {
+    if (y > 250) {
+      doc.addPage();
+      y = 18;
+    }
+
+    doc.setFontSize(12);
+    doc.setTextColor(45, 106, 255);
+    doc.text(title, 14, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(40, 60, 80);
+    const wrapped = doc.splitTextToSize(lines.join('\n'), 180);
+    doc.text(wrapped, 14, y);
+    y += wrapped.length * 7 + 8;
+  };
+
+  addSection('Overview', [
+    `Prediction: ${record.label}`,
+    `Probability: ${record.probability}%`,
+    `Risk Level: ${record.risk_level}`,
+    `CKD Stage: ${record.ckd_stage || details.stage_desc || 'Not available'}`,
+    `Model: ${details.model_name || 'Stored result'}`,
+  ]);
+
+  addSection('Clinical Interpretation', [details.interpretation || 'No interpretation available.']);
+
+  const riskFactors = details.risk_factors && details.risk_factors.length
+    ? details.risk_factors
+    : ['No major risk factors were identified.'];
+  addSection('Key Risk Factors', riskFactors.map(item => `• ${item}`));
+
+  addSection('Clinical Inputs', Object.entries(inputs).map(([key, value]) => `• ${FIELD_LABELS[key] || key}: ${value ?? 'Not provided'}`));
+
+  const warningLines = warnings.length ? warnings.map(item => `• ${item.msg}`) : ['No early warnings recorded.'];
+  addSection('Early Detection Alerts', warningLines);
+
+  const recommendationLines = recommendations.length
+    ? recommendations.map(item => `• ${item.title}: ${item.desc}`)
+    : ['No recommendations available.'];
+  addSection('Recommendations', recommendationLines);
+
+  doc.save(`ckd-report-${record.id || 'history'}.pdf`);
+}
+
 function DashboardContent() {
   const { getToken } = useAuth();
   const { user } = useUser();
@@ -114,7 +181,7 @@ function DashboardContent() {
             return <section key={record.id} style={{ background: '#0D1526', border: `1px solid ${isSelected ? '#2D6AFF' : colors.line}`, borderRadius: 14, padding: '1.15rem 1.3rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                 <div><div style={{ color: colors.muted, fontSize: '.75rem', marginBottom: 7 }}>{formatDate(record.created_at)}</div><div style={{ color: positive ? colors.negative : colors.positive, fontWeight: 700 }}>{record.label}</div></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>PROBABILITY</div><strong style={{ color: '#DCE8FF' }}>{record.probability}%</strong></div><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>RISK</div><strong style={{ color: record.result_details?.risk_color || colors.muted }}>{record.risk_level}</strong></div><button onClick={() => setSelected(isSelected ? null : record.id)} style={{ border: '1px solid #2D6AFF', background: 'rgba(45,106,255,.1)', color: '#DCE8FF', borderRadius: 8, padding: '8px 11px', cursor: 'pointer' }}>{isSelected ? 'Hide details' : 'View details'}</button><button aria-label="Delete prediction" onClick={() => remove(record.id)} style={{ border: '1px solid rgba(255,94,114,.35)', background: 'transparent', color: colors.negative, borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>Delete</button></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>PROBABILITY</div><strong style={{ color: '#DCE8FF' }}>{record.probability}%</strong></div><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>RISK</div><strong style={{ color: record.result_details?.risk_color || colors.muted }}>{record.risk_level}</strong></div><button onClick={() => setSelected(isSelected ? null : record.id)} style={{ border: '1px solid #2D6AFF', background: 'rgba(45,106,255,.1)', color: '#DCE8FF', borderRadius: 8, padding: '8px 11px', cursor: 'pointer' }}>{isSelected ? 'Hide details' : 'View details'}</button><button onClick={() => downloadRecordPdf(record)} style={{ border: '1px solid rgba(0,229,180,.35)', background: 'rgba(0,229,180,.08)', color: '#00E5B4', borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>PDF</button><button aria-label="Delete prediction" onClick={() => remove(record.id)} style={{ border: '1px solid rgba(255,94,114,.35)', background: 'transparent', color: colors.negative, borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>Delete</button></div>
               </div>
               {isSelected && <ResultDetails record={record} />}
             </section>;
