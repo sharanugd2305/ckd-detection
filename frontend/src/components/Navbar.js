@@ -76,15 +76,7 @@ export default function Navbar(){
             </SignedIn>
           </>
         )}
-        <Link to="/predict" style={{
-          textDecoration:'none',marginLeft:8,padding:'8px 20px',borderRadius:8,
-          background:'linear-gradient(135deg,#2D6AFF,#00E5B4)',
-          color:'#fff',fontSize:'.875rem',fontWeight:600,
-          boxShadow:'0 4px 20px rgba(45,106,255,.3)',transition:'opacity .2s,transform .2s',display:'inline-block',
-        }}
-          onMouseOver={e=>{e.currentTarget.style.opacity='.85';e.currentTarget.style.transform='translateY(-1px)';}}
-          onMouseOut={e=>{e.currentTarget.style.opacity='1';e.currentTarget.style.transform='translateY(0)';}}
-        >Run Analysis →</Link>
+
       </div>
     </nav>
   );
