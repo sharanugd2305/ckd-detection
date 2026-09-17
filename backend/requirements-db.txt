@@ -1,0 +1,4 @@
+clerk-backend-api
+python-dotenv
+SQLAlchemy
+psycopg[binary]

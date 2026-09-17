@@ -1,18 +1,110 @@
 import json
 import os
+from datetime import datetime, timezone
+from functools import wraps
 
 import joblib
 import numpy as np
 import pandas as pd
-from flask import Flask, jsonify, request
+from clerk_backend_api import Clerk
+from clerk_backend_api.security.types import AuthenticateRequestOptions
+from dotenv import load_dotenv
+from flask import Flask, g, jsonify, request
 from flask_cors import CORS
+from sqlalchemy import Column, DateTime, Float, Integer, JSON, String, create_engine, desc
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, 'model')
 DATASET_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', 'data', 'ckd_1659.csv'))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 app = Flask(__name__)
 CORS(app)
+
+DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{os.path.join(BASE_DIR, 'nephroscan.db')}")
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
+elif DATABASE_URL.startswith('postgresql://') and '+psycopg' not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    connect_args={'check_same_thread': False} if DATABASE_URL.startswith('sqlite') else {},
+)
+Session = scoped_session(sessionmaker(bind=engine, autoflush=False))
+Base = declarative_base()
+
+
+class PredictionHistory(Base):
+    __tablename__ = 'prediction_history'
+
+    id = Column(Integer, primary_key=True)
+    clerk_user_id = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    inputs = Column(JSON, nullable=False)
+    probability = Column(Float, nullable=False)
+    label = Column(String(80), nullable=False)
+    risk_level = Column(String(80), nullable=False)
+    ckd_stage = Column(String(40), nullable=True)
+
+
+Base.metadata.create_all(engine)
+
+
+@app.teardown_appcontext
+def remove_database_session(error=None):
+    Session.remove()
+
+CLERK_SECRET_KEY = os.getenv('CLERK_SECRET_KEY')
+clerk_client = Clerk(bearer_auth=CLERK_SECRET_KEY) if CLERK_SECRET_KEY else None
+
+
+def optional_clerk_auth(view):
+    @wraps(view)
+    def authenticated_or_guest_view(*args, **kwargs):
+        g.clerk_user_id = None
+        authorization = request.headers.get('Authorization', '')
+        if not authorization:
+            return view(*args, **kwargs)
+        if clerk_client is None:
+            return jsonify({'error': 'Backend authentication is not configured.'}), 503
+
+        try:
+            state = clerk_client.authenticate_request(
+                request,
+                AuthenticateRequestOptions(secret_key=CLERK_SECRET_KEY),
+            )
+        except Exception:
+            return jsonify({'error': 'Unable to verify the Clerk session.'}), 401
+
+        if not state.is_authenticated or not state.payload or not state.payload.get('sub'):
+            return jsonify({'error': 'Your Clerk session is invalid or expired.'}), 401
+
+        g.clerk_user_id = state.payload['sub']
+        return view(*args, **kwargs)
+
+    return authenticated_or_guest_view
+
+
+def require_clerk_auth(view):
+    @wraps(view)
+    def protected_view(*args, **kwargs):
+        if clerk_client is None:
+            return jsonify({'error': 'Backend authentication is not configured.'}), 503
+        try:
+            state = clerk_client.authenticate_request(
+                request,
+                AuthenticateRequestOptions(secret_key=CLERK_SECRET_KEY),
+            )
+        except Exception:
+            return jsonify({'error': 'Unable to verify the Clerk session.'}), 401
+        if not state.is_authenticated or not state.payload or not state.payload.get('sub'):
+            return jsonify({'error': 'A valid Clerk sign-in is required.'}), 401
+        g.clerk_user_id = state.payload['sub']
+        return view(*args, **kwargs)
+    return protected_view
 
 with open(os.path.join(MODEL_DIR, 'model_summary.json'), 'r', encoding='utf-8') as f:
     MODEL_SUMMARY = json.load(f)
@@ -153,8 +245,19 @@ def build_clinical_summary(data, pred):
 
     return {
         'risk_factors': factors,
+
         'interpretation': summary,
     }
+
+
+def get_risk_level(prob):
+    if prob < 0.30:
+        return "Low Risk", "#34C78A"
+    if prob < 0.55:
+        return "Moderate Risk", "#F5A623"
+    if prob < 0.75:
+        return "High Risk", "#F05D5D"
+    return "Very High Risk", "#C0392B"
 
 # ── Age Group Classification ───────────────────────────────────────────────────
 def get_age_group(age):
@@ -172,6 +275,7 @@ def get_normal_ranges(age):
                  'gfr': (30, 90),  'hemoglobin': (10, 14) }
     elif age < 13:
         return { 'creatinine': (0.3, 0.7), 'bun': (7, 20),
+
                  'gfr': (90, 140), 'hemoglobin': (11.5, 15) }
     elif age < 18:
         return { 'creatinine': (0.5, 1.0), 'bun': (8, 22),
@@ -195,14 +299,6 @@ def get_ckd_stage(gfr, age):
         elif gfr >= 30: return "Stage 3b",   "Moderately to Severely Decreased"
         elif gfr >= 15: return "Stage 4",    "Severely Decreased"
         else:           return "Stage 5",    "Kidney Failure (End Stage)"
-
-# ── Risk Level ────────────────────────────────────────────────────────────────
-def get_risk_level(prob):
-    if   prob < 0.30: return "Low Risk",       "#34C78A"
-    elif prob < 0.55: return "Moderate Risk",  "#F5A623"
-    elif prob < 0.75: return "High Risk",      "#F05D5D"
-    else:             return "Very High Risk", "#C0392B"
-
 # ── Early Warning Flags ───────────────────────────────────────────────────────
 def get_early_warnings(data, age_group, age, norms):
     warnings = []
@@ -357,6 +453,7 @@ def model_info():
     return jsonify(MODEL_SUMMARY)
 
 @app.route('/predict', methods=['POST'])
+@optional_clerk_auth
 def predict():
     raw_data = request.get_json(silent=True) or {}
     if not isinstance(raw_data, dict):
@@ -387,7 +484,7 @@ def predict():
     recommendations            = get_recommendations(data, pred, age_group, age, norms)
     clinical_summary           = build_clinical_summary(data, pred)
 
-    return jsonify({
+    response_data = {
         'prediction'      : pred,
         'label'           : 'CKD Detected' if pred == 1 else 'No CKD Detected',
         'probability'     : round(prob * 100, 1),
@@ -405,7 +502,58 @@ def predict():
         'is_pediatric'    : age < 18,
         'is_young'        : age < 40,
         'model_name'      : MODEL_SUMMARY['winner'],
-    })
+        'history_saved'   : False,
+    }
+
+    if g.clerk_user_id:
+        history = PredictionHistory(
+            clerk_user_id=g.clerk_user_id,
+            inputs={key: raw_data.get(key) for key in FEATURES},
+            probability=response_data['probability'],
+            label=response_data['label'],
+            risk_level=risk_level,
+            ckd_stage=stage,
+        )
+        db_session = Session()
+        db_session.add(history)
+        db_session.commit()
+        response_data['history_saved'] = True
+
+    return jsonify(response_data)
+
+
+@app.route('/history', methods=['GET'])
+@require_clerk_auth
+def prediction_history():
+    records = Session().query(PredictionHistory).filter_by(
+        clerk_user_id=g.clerk_user_id,
+    ).order_by(desc(PredictionHistory.created_at)).limit(100).all()
+    return jsonify([
+        {
+            'id': record.id,
+            'created_at': record.created_at.isoformat(),
+            'inputs': record.inputs,
+            'probability': record.probability,
+            'label': record.label,
+            'risk_level': record.risk_level,
+            'ckd_stage': record.ckd_stage,
+        }
+        for record in records
+    ])
+
+
+@app.route('/history/<int:record_id>', methods=['DELETE'])
+@require_clerk_auth
+def delete_prediction_history(record_id):
+    record = Session().query(PredictionHistory).filter_by(
+        id=record_id,
+        clerk_user_id=g.clerk_user_id,
+    ).first()
+    if record is None:
+        return jsonify({'error': 'History record not found.'}), 404
+    Session().delete(record)
+    Session().commit()
+    return jsonify({'deleted': True})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

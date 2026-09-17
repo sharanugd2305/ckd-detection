@@ -14,6 +14,14 @@ ENV/
 .env
 .env.*
 !.env.example
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+*.crt
+credentials.json
+secrets.json
 
 # Model and ML artifacts
 backend/model/*.pkl
@@ -34,6 +42,9 @@ frontend/node_modules/
 frontend/build/
 frontend/coverage/
 frontend/.cache/
+frontend/.vercel/
+dist/
+coverage/
 
 # Logs
 *.log
@@ -42,8 +53,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # OS / editor
-.DS_Store
 .vscode/
+.idea/
+.DS_Store
+Thumbs.db
 
 # Local package folder typo
 backend/requirements.txt/

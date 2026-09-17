@@ -1,5 +1,6 @@
 import React,{useState,useMemo,useEffect} from 'react';
 import axios from 'axios';
+import {SignedIn,SignedOut,useAuth} from '@clerk/clerk-react';
 import { jsPDF } from 'jspdf';
 
 const FIELDS=[
@@ -102,6 +103,7 @@ function Bar({pct,color='#5B7FFF'}){
 
 export default function Predict(){
   const MIN_REQUIRED_FIELDS=5;
+  const {getToken,isSignedIn}=useAuth();
   const [form,setForm]=useState(init);
   const [result,setResult]=useState(null);
   const [simValues,setSimValues]=useState(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[field.key,field.default])));
@@ -150,15 +152,17 @@ export default function Predict(){
     setLoading(true);
     setResult(null);
     try{
-      const res = await axios.post('http://localhost:5000/predict',buildPayload(form));
+      const token=isSignedIn?await getToken():null;
+      const headers=token?{Authorization:`Bearer ${token}`}:{};
+      const res = await axios.post('http://localhost:5000/predict',buildPayload(form),{headers});
       setResult(res.data);
       setSimResult(null);
       setSimValues(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[
         field.key,form[field.key]===''?field.default:Number(form[field.key])
       ])));
       setTimeout(()=>document.getElementById('result-section')?.scrollIntoView({behavior:'smooth'}),150);
-    }catch{
-      setError('Cannot reach backend. Make sure Flask is running on port 5000.');
+    }catch(error){
+      setError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Cannot reach backend. Make sure Flask is running on port 5000.');
     }
     setLoading(false);
   };
@@ -168,10 +172,12 @@ export default function Predict(){
     setSimLoading(true);
     setSimError('');
     try{
-      const res=await axios.post('http://localhost:5000/predict',buildPayload(form,simValues));
+      const token=isSignedIn?await getToken():null;
+      const headers=token?{Authorization:`Bearer ${token}`}:{};
+      const res=await axios.post('http://localhost:5000/predict',buildPayload(form,simValues),{headers});
       setSimResult(res.data);
-    }catch{
-      setSimError('Simulation unavailable. Make sure Flask is running on port 5000.');
+    }catch(error){
+      setSimError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Simulation unavailable. Make sure Flask is running on port 5000.');
     }
     setSimLoading(false);
   };
@@ -277,6 +283,18 @@ export default function Predict(){
         <p style={{color:'#8BA0C8',fontSize:'.9rem',lineHeight:1.65}}>
           Enter all patient clinical values below. Predictions use the <span style={{color:'#A97FFF',fontWeight:600}}>{modelInfo?.winner || 'Random Forest'}</span> model.
         </p>
+        <div style={{marginTop:'1rem'}}>
+          <SignedIn>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.08)',border:'1px solid rgba(0,212,168,.25)',borderRadius:999,padding:'7px 12px',color:'#00D4A8',fontSize:'.75rem'}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:'#00D4A8'}}/> Signed-in mode · linked to your account
+            </div>
+          </SignedIn>
+          <SignedOut>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.08)',border:'1px solid rgba(245,166,35,.25)',borderRadius:999,padding:'7px 12px',color:'#F5A623',fontSize:'.75rem'}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:'#F5A623'}}/> Guest mode · one-time prediction, not stored
+            </div>
+          </SignedOut>
+        </div>
       </div>
 
       {/* Model indicator strip */}

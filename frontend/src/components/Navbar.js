@@ -1,5 +1,8 @@
 import React,{useState,useEffect} from 'react';
 import {Link,useLocation} from 'react-router-dom';
+import {SignInButton,SignUpButton,SignedIn,SignedOut,UserButton} from '@clerk/clerk-react';
+
+const clerkConfigured=Boolean(process.env.REACT_APP_CLERK_PUBLISHABLE_KEY);
 
 export default function Navbar(){
   const {pathname}=useLocation();
@@ -58,6 +61,21 @@ export default function Navbar(){
             >{l}</Link>
           );
         })}
+        {clerkConfigured&&(
+          <>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button type="button" style={{padding:'7px 12px',border:'1px solid #1F2F50',borderRadius:8,background:'transparent',color:'#DCE8FF',fontSize:'.82rem',cursor:'pointer'}}>Sign in</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button type="button" style={{padding:'7px 12px',border:'1px solid rgba(0,229,180,.35)',borderRadius:8,background:'rgba(0,229,180,.08)',color:'#00E5B4',fontSize:'.82rem',cursor:'pointer'}}>Sign up</button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </>
+        )}
         <Link to="/predict" style={{
           textDecoration:'none',marginLeft:8,padding:'8px 20px',borderRadius:8,
           background:'linear-gradient(135deg,#2D6AFF,#00E5B4)',
