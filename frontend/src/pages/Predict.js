@@ -174,7 +174,9 @@ export default function Predict(){
     try{
       const token=isSignedIn?await getToken():null;
       const headers=token?{Authorization:`Bearer ${token}`}:{};
-      const res=await axios.post('http://localhost:5000/predict',buildPayload(form,simValues),{headers});
+      const scenarioPayload=buildPayload(form,simValues);
+      scenarioPayload._save_history=false;
+      const res=await axios.post('http://localhost:5000/predict',scenarioPayload,{headers});
       setSimResult(res.data);
     }catch(error){
       setSimError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Simulation unavailable. Make sure Flask is running on port 5000.');
