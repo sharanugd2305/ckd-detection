@@ -1,28 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import kidneyImg from '../images/kidney.jpg';
-
-/* ── Animated counter ── */
-function Counter({ to, suffix = '', duration = 1800 }) {
-  const [v, setV] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        let s = 0, step = to / (duration / 16);
-        const t = setInterval(() => {
-          s += step;
-          if (s >= to) { setV(to); clearInterval(t); }
-          else setV(Math.floor(s));
-        }, 16);
-        obs.disconnect();
-      }
-    }, { threshold: .3 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [to, duration]);
-  return <span ref={ref}>{v.toLocaleString()}{suffix}</span>;
-}
 
 /* ── Feature card ── */
 function FCard({ icon, title, body, accent = '#2D6AFF', delay = 0 }) {
@@ -267,32 +245,6 @@ export default function Home() {
             >View Methodology</button>
           </div>
         </div>
-      </div>
-
-      {/* ── Stats row ── */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem',
-        marginBottom: '4rem',
-      }}>
-        {[
-          { v: 11, s: '', label: 'Clinical Features', color: '#2D6AFF' },
-          { v: 4, s: '', label: 'ML Models', color: '#00E5B4' },
-          { v: 6, s: '', label: 'Age Groups Covered', color: '#9B6DFF' },
-        ].map((st, i) => (
-          <div key={i} style={{
-            background: '#0D1526', border: '1px solid #172240', borderRadius: 14,
-            padding: '1.4rem', textAlign: 'center',
-            transition: 'transform .2s,border-color .2s',
-          }}
-            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = st.color; }}
-            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#172240'; }}
-          >
-            <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '2.2rem', fontWeight: 800, color: st.color, lineHeight: 1, marginBottom: 6 }}>
-              <Counter to={st.v} suffix={st.s} />
-            </div>
-            <div style={{ color: '#7A92BC', fontSize: '.78rem', letterSpacing: '.04em' }}>{st.label}</div>
-          </div>
-        ))}
       </div>
 
       {/* ── All-age banner ── */}
