@@ -49,7 +49,7 @@ const RC={
   info:   {bg:'rgba(91,127,255,.08)', border:'rgba(91,127,255,.22)', text:'#5B7FFF'},
 };
 
-const ageBadgeColor={infant:'#A97FFF',child:'#5B7FFF',teen:'#38BDF8',youngadult:'#00D4A8',adult:'#F5A623',senior:'#FF4D6A'};
+const ageBadgeColor={under_20:'#A97FFF',youngadult:'#00D4A8',adult:'#F5A623',senior:'#FF4D6A'};
 
 /* ── Radar ──────────────────────────────────────────────────── */
 function KidneyRadar({values}){
