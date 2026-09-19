@@ -73,10 +73,10 @@ export default function About(){
       {/* Overview */}
       <Section title="🎯 Project Overview" accent="#2D6AFF">
         <p style={{color:'#7A92BC',fontSize:'.88rem',lineHeight:1.75}}>
-          Chronic Kidney Disease (CKD) affects people of all ages, including children, and often goes undetected until significant kidney damage has occurred. NephroScan addresses this by providing an AI-powered early detection system that accepts routine clinical values and delivers instant risk classification, CKD stage estimation, and age-aware health guidance.
+          Chronic Kidney Disease (CKD) is a major health concern across adulthood and older age, and it is often under-recognized until significant kidney damage has occurred. NephroScan addresses this by providing an AI-powered early detection system that accepts routine clinical values and delivers instant risk classification, CKD stage estimation, and age-aware health guidance.
         </p>
         <p style={{color:'#7A92BC',fontSize:'.88rem',lineHeight:1.75,marginTop:'1rem'}}>
-          The system applies pediatric-adjusted clinical thresholds for patients under 18, recognizing that reference ranges for creatinine, GFR, and hemoglobin differ significantly between children and adults.
+          The current project is trained on adult CKD data spanning ages 20-90, so the app groups patients into adult and senior ranges rather than pediatric categories such as infant or child.
         </p>
       </Section>
 
@@ -116,13 +116,13 @@ export default function About(){
       </Section>
 
       {/* Age system */}
-      <Section title="👶 Age-Adaptive Detection System" accent="#9B6DFF">
+      <Section title="� Age Groups Used in This Dataset" accent="#9B6DFF">
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:'1rem'}}>
           {[
-            {g:'Infant (0–1)',    color:'#9B6DFF',n:'Cr: 0.1–0.4 mg/dL · GFR: 30–90'},
-            {g:'Child (2–12)',    color:'#2D6AFF',n:'Cr: 0.3–0.7 mg/dL · GFR: ≥90'},
-            {g:'Teen (13–17)',    color:'#00BFFF',n:'Cr: 0.5–1.0 mg/dL · GFR: ≥90'},
-            {g:'Adult (18+)',     color:'#00E5B4',n:'Cr: 0.6–1.2 mg/dL · GFR: ≥90'},
+            {g:'Young Adult (20–39)', color:'#9B6DFF',n:'Cr: 0.6–1.1 mg/dL · GFR: ≥90'},
+            {g:'Adult (40–59)',       color:'#2D6AFF',n:'Cr: 0.6–1.2 mg/dL · GFR: ≥90'},
+            {g:'Senior (60+)',        color:'#00BFFF',n:'Cr: 0.6–1.3 mg/dL · GFR: ≥60'},
+            {g:'Dataset Range',       color:'#00E5B4',n:'Ages: 20–90 years'},
           ].map((a,i)=>(
             <div key={i} style={{background:`${a.color}0C`,border:`1px solid ${a.color}22`,borderRadius:8,padding:'10px 12px'}}>
               <div style={{color:a.color,fontWeight:600,fontSize:'.82rem',marginBottom:3}}>{a.g}</div>
@@ -131,7 +131,7 @@ export default function About(){
           ))}
         </div>
         <p style={{color:'#7A92BC',fontSize:'.82rem',lineHeight:1.65}}>
-          Children have naturally lower serum creatinine and different GFR baselines. Applying adult thresholds to pediatric patients leads to missed diagnoses. NephroScan corrects for this automatically based on the patient's entered age.
+          The dataset used for this project contains adult patients only, with ages from 20 to 90. Because of that, the model groups patients into adult and senior ranges instead of pediatric categories.
         </p>
       </Section>
 
