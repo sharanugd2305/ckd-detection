@@ -267,44 +267,39 @@ def get_risk_level(prob):
 
 # ── Age Group Classification ───────────────────────────────────────────────────
 def get_age_group(age):
-    if   age < 2:  return "infant",     "Infant (0-2 years)"
-    elif age < 13: return "child",      "Child (2-12 years)"
-    elif age < 18: return "teen",       "Teenager (13-17 years)"
-    elif age < 40: return "youngadult", "Young Adult (18-39 years)"
-    elif age < 60: return "adult",      "Adult (40-59 years)"
-    else:          return "senior",     "Senior (60+ years)"
+    if age < 20:
+        return "under_20", "Under 20 years (outside the current dataset range)"
+    elif age < 40:
+        return "youngadult", "Young Adult (20-39 years)"
+    elif age < 60:
+        return "adult", "Adult (40-59 years)"
+    else:
+        return "senior", "Senior (60+ years)"
 
 # ── Age-Adjusted Normal Ranges ─────────────────────────────────────────────────
 def get_normal_ranges(age):
-    if age < 2:
-        return { 'creatinine': (0.1, 0.4), 'bun': (4, 19),
-                 'gfr': (30, 90),  'hemoglobin': (10, 14) }
-    elif age < 13:
-        return { 'creatinine': (0.3, 0.7), 'bun': (7, 20),
-
-                 'gfr': (90, 140), 'hemoglobin': (11.5, 15) }
-    elif age < 18:
-        return { 'creatinine': (0.5, 1.0), 'bun': (8, 22),
-                 'gfr': (90, 140), 'hemoglobin': (12, 16) }
-    else:
-        return { 'creatinine': (0.6, 1.2), 'bun': (8, 25),
-                 'gfr': (90, 120), 'hemoglobin': (12, 17) }
+    # This project is trained on CKD data for adult patients aged 20-90.
+    # Pediatric ranges are intentionally omitted because they are not represented in the dataset.
+    return { 'creatinine': (0.6, 1.2), 'bun': (8, 25),
+             'gfr': (90, 120), 'hemoglobin': (12, 17) }
 
 # ── CKD Stage from GFR ────────────────────────────────────────────────────────
 def get_ckd_stage(gfr, age):
-    if age < 2:
-        if   gfr >= 60: return None,        "Normal for Age"
-        elif gfr >= 45: return "Stage 1-2",  "Mildly Decreased"
-        elif gfr >= 30: return "Stage 3",    "Moderately Decreased"
-        elif gfr >= 15: return "Stage 4",    "Severely Decreased"
-        else:           return "Stage 5",    "Kidney Failure"
+    if age < 20:
+        if gfr >= 90: return None, "Normal or High"
+        elif gfr >= 60: return "Stage 1-2", "Mildly Decreased"
+        elif gfr >= 45: return "Stage 3a", "Mildly to Moderately Decreased"
+        elif gfr >= 30: return "Stage 3b", "Moderately to Severely Decreased"
+        elif gfr >= 15: return "Stage 4", "Severely Decreased"
+        else: return "Stage 5", "Kidney Failure (End Stage)"
     else:
-        if   gfr >= 90: return None,         "Normal or High"
-        elif gfr >= 60: return "Stage 1-2",  "Mildly Decreased"
-        elif gfr >= 45: return "Stage 3a",   "Mildly to Moderately Decreased"
-        elif gfr >= 30: return "Stage 3b",   "Moderately to Severely Decreased"
-        elif gfr >= 15: return "Stage 4",    "Severely Decreased"
-        else:           return "Stage 5",    "Kidney Failure (End Stage)"
+        if gfr >= 90: return None, "Normal or High"
+        elif gfr >= 60: return "Stage 1-2", "Mildly Decreased"
+        elif gfr >= 45: return "Stage 3a", "Mildly to Moderately Decreased"
+        elif gfr >= 30: return "Stage 3b", "Moderately to Severely Decreased"
+        elif gfr >= 15: return "Stage 4", "Severely Decreased"
+        else: return "Stage 5", "Kidney Failure (End Stage)"
+
 # ── Early Warning Flags ───────────────────────────────────────────────────────
 def get_early_warnings(data, age_group, age, norms):
     warnings = []
@@ -316,25 +311,12 @@ def get_early_warnings(data, age_group, age, norms):
     family = float(data.get('FamilyHistoryKidneyDisease', 0))
     cr_min, cr_max = norms['creatinine']
 
-    if age_group in ['infant', 'child', 'teen']:
+    if age_group == 'under_20':
         warnings.append({ "level": "alert",
-            "msg": f"Patient is {int(age)} years old. CKD in children often goes undetected. Pediatric nephrology evaluation is strongly recommended." })
-        if creat > cr_max:
-            warnings.append({ "level": "danger",
-                "msg": f"Serum creatinine ({creat} mg/dL) is above the normal range for this age ({cr_min}-{cr_max} mg/dL). Key early CKD indicator in children." })
-        if protein > 0.1:
-            warnings.append({ "level": "danger",
-                "msg": f"Protein in urine ({protein} g/day) detected. Even mild proteinuria in children indicates early kidney disease." })
-        if uti >= 2:
-            warnings.append({ "level": "warning",
-                "msg": f"{int(uti)} UTIs recorded. Recurrent UTIs in children can cause kidney scarring leading to CKD." })
-        if family == 1:
-            warnings.append({ "level": "warning",
-                "msg": "Family history of kidney disease detected. Children with genetic risk should be screened annually." })
-
+            "msg": f"Patient age {int(age)} is outside the current CKD dataset range (20-90 years). Model interpretation should be treated cautiously." })
     elif age_group == 'youngadult':
         warnings.append({ "level": "alert",
-            "msg": "CKD in young adults (18-39) is often asymptomatic and discovered late. Early detection now can prevent kidney failure for decades." })
+            "msg": "CKD in young adults (20-39) is often asymptomatic and discovered late. Early detection now can prevent kidney failure for decades." })
         if creat > cr_max:
             warnings.append({ "level": "danger",
                 "msg": f"Elevated creatinine ({creat} mg/dL) in a young adult is unusual. Immediate kidney function evaluation required." })
@@ -344,6 +326,16 @@ def get_early_warnings(data, age_group, age, norms):
         if gfr < 90:
             warnings.append({ "level": "danger",
                 "msg": f"GFR of {gfr} mL/min is below normal for your age. Reduced GFR in young adults is an early CKD warning sign." })
+    else:
+        if creat > cr_max:
+            warnings.append({ "level": "danger",
+                "msg": f"Serum creatinine ({creat} mg/dL) is above the normal adult reference range ({cr_min}-{cr_max} mg/dL)." })
+        if protein > 0.1:
+            warnings.append({ "level": "danger",
+                "msg": f"Protein in urine ({protein} g/day) detected. Persistent proteinuria is a major CKD warning sign." })
+        if gfr < 60:
+            warnings.append({ "level": "warning",
+                "msg": f"GFR of {gfr} mL/min indicates reduced kidney function and warrants clinical review." })
 
     return warnings[:4]
 
@@ -362,53 +354,21 @@ def get_recommendations(data, pred, age_group, age, norms):
     hemo_min = norms['hemoglobin'][0]
 
     if pred == 0:
-        if age_group in ['infant', 'child', 'teen']:
-            recs.append({ "type": "success", "icon": "✅",
-                "title": "Good News — No CKD Detected",
-                "desc":  "Kidney function appears normal. Continue regular pediatric check-ups every 6-12 months." })
-            recs.append({ "type": "info", "icon": "💧",
-                "title": "Hydration for Kids",
-                "desc":  "Ensure the child drinks adequate water daily. 1-1.5L for children, 1.5-2L for teenagers." })
-            if family == 1:
-                recs.append({ "type": "warning", "icon": "🧬",
-                    "title": "Genetic Risk — Annual Screening",
-                    "desc":  "Family history detected. Annual urine and blood tests recommended even without symptoms." })
-            if uti >= 1:
-                recs.append({ "type": "warning", "icon": "🦠",
-                    "title": "UTI Management in Children",
-                    "desc":  "Even one UTI in a child warrants imaging to rule out structural kidney abnormalities (VUR)." })
-        else:
-            recs.append({ "type": "success", "icon": "✅",
-                "title": "No CKD Detected",
-                "desc":  "Kidney function appears normal. Schedule annual kidney screening to stay safe." })
-            recs.append({ "type": "info", "icon": "💧",
-                "title": "Stay Hydrated",
-                "desc":  "Drink 8-10 glasses of water daily. Avoid excessive salt and processed foods." })
-            recs.append({ "type": "info", "icon": "🏃",
-                "title": "Regular Exercise",
-                "desc":  "30 minutes of moderate activity 5 days a week reduces CKD risk significantly." })
-            if family == 1:
-                recs.append({ "type": "warning", "icon": "🧬",
-                    "title": "Family History — Screen Annually",
-                    "desc":  "Annual kidney function tests (eGFR + urine albumin) strongly advised." })
+        recs.append({ "type": "success", "icon": "✅",
+            "title": "No CKD Detected",
+            "desc":  "Kidney function appears normal for the current adult CKD dataset range. Continue regular health monitoring." })
+        recs.append({ "type": "info", "icon": "💧",
+            "title": "Stay Hydrated",
+            "desc":  "Drink 8-10 glasses of water daily. Avoid excessive salt and processed foods." })
+        recs.append({ "type": "info", "icon": "🏃",
+            "title": "Regular Exercise",
+            "desc":  "30 minutes of moderate activity 5 days a week reduces CKD risk significantly." })
+        if family == 1:
+            recs.append({ "type": "warning", "icon": "🧬",
+                "title": "Family History — Screen Annually",
+                "desc":  "Annual kidney function tests (eGFR + urine albumin) strongly advised." })
     else:
-        if age_group in ['infant', 'child', 'teen']:
-            recs.append({ "type": "danger", "icon": "🏥",
-                "title": "Immediate Pediatric Nephrology Referral",
-                "desc":  f"CKD in a {int(age)}-year-old requires urgent evaluation by a pediatric nephrologist. Do not delay." })
-            recs.append({ "type": "warning", "icon": "🍽️",
-                "title": "Pediatric Renal Diet",
-                "desc":  "A pediatric dietitian should design a kidney-friendly diet appropriate for the child's age and growth needs." })
-            recs.append({ "type": "info", "icon": "📏",
-                "title": "Monitor Growth & Development",
-                "desc":  "CKD affects growth hormone levels. Regular monitoring of height, weight, and bone health is essential." })
-            recs.append({ "type": "info", "icon": "💉",
-                "title": "Blood Pressure Management",
-                "desc":  "Hypertension is common in pediatric CKD. Age-appropriate BP targets must be maintained to slow progression." })
-            recs.append({ "type": "warning", "icon": "🎓",
-                "title": "School & Quality of Life",
-                "desc":  "Inform school staff. Fatigue and anemia from CKD can affect academic performance and daily activities." })
-        elif age_group == 'youngadult':
+        if age_group == 'youngadult':
             recs.append({ "type": "danger", "icon": "🚨",
                 "title": "Early Intervention is Critical",
                 "desc":  "CKD detected at a young age. Early treatment can prevent kidney failure for decades. Act now." })
@@ -425,7 +385,7 @@ def get_recommendations(data, pred, age_group, age, norms):
                 "desc":  "Avoid NSAIDs, excessive alcohol, and contrast dyes. Inform all doctors about your kidney condition." })
             recs.append({ "type": "info", "icon": "💊",
                 "title": "Blood Pressure Target",
-                "desc":  "Target BP < 130/80 mmHg. ACE inhibitors or ARBs are preferred in young CKD patients with proteinuria." })
+                "desc":  "Target BP < 130/80 mmHg. ACE inhibitors or ARBs are preferred in CKD patients with proteinuria." })
         else:
             if gfr < 30:
                 recs.append({ "type": "danger", "icon": "🚨",
