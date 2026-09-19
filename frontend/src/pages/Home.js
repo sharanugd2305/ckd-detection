@@ -69,21 +69,19 @@ export default function Home() {
   }, []);
 
   const features = [
-    { icon: '🧬', title: 'Age-Aware Thresholds', body: 'Creatinine, GFR, and hemoglobin norms auto-adjust for infants, children, teens, and adults using pediatric nephrological standards.', accent: '#2D6AFF', delay: 0 },
+    { icon: '🧬', title: 'Age-Aware Thresholds', body: 'Clinical reference ranges are tuned to the project dataset age span of 20–90 years, covering young adults through seniors.', accent: '#2D6AFF', delay: 0 },
     { icon: '⚡', title: 'Instant Risk Scoring', body: 'Trained ML models deliver a precise CKD probability score with confidence metrics in under a second.', accent: '#00E5B4', delay: 80 },
     { icon: '📊', title: 'CKD Stage Estimation', body: 'GFR-based staging maps every result to Stage 1–5 following KDIGO international clinical guidelines.', accent: '#9B6DFF', delay: 160 },
-    { icon: '🚦', title: 'Early Detection Alerts', body: 'Specialized warning system for high-risk groups — children, young adults, and patients with family history.', accent: '#FFAA2C', delay: 240 },
+    { icon: '🚦', title: 'Early Detection Alerts', body: 'Specialized warning system for high-risk adult groups, including young adults and older patients with family history.', accent: '#FFAA2C', delay: 240 },
     { icon: '💊', title: 'Personalized Guidance', body: 'Evidence-based health recommendations tailored to each patient\'s specific lab values, age group, and identified risk factors.', accent: '#00E5B4', delay: 320 },
     { icon: '🔬', title: 'Leakage-Safe Multi-Model Ensemble', body: 'Logistic Regression, Random Forest, SVM, and XGBoost — all trained with train-only scaling and SMOTENC balancing on clinically validated data.', accent: '#2D6AFF', delay: 400 },
   ];
 
   const ages = [
-    { emoji: '👶', label: 'Infant', color: '#9B6DFF' },
-    { emoji: '👧', label: 'Child', color: '#2D6AFF' },
-    { emoji: '🧑', label: 'Teen', color: '#00BFFF' },
-    { emoji: '👨', label: 'Young Adult', color: '#00E5B4' },
-    { emoji: '🧔', label: 'Adult', color: '#FFAA2C' },
-    { emoji: '👴', label: 'Senior', color: '#FF3D57' },
+    { emoji: '👨', label: 'Young Adult', color: '#9B6DFF' },
+    { emoji: '🧔', label: 'Adult', color: '#2D6AFF' },
+    { emoji: '👴', label: 'Senior', color: '#00E5B4' },
+    { emoji: '📊', label: '20–90 yrs', color: '#FFAA2C' },
   ];
 
   const stages = [
@@ -247,7 +245,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── All-age banner ── */}
+      {/* ── Dataset age banner ── */}
       <div style={{
         background: '#0D1526', border: '1px solid #172240', borderRadius: 18,
         padding: '1.8rem 2rem', marginBottom: '4rem',
@@ -257,13 +255,13 @@ export default function Home() {
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5B4', display: 'inline-block', animation: 'blink 2s ease infinite' }} />
-              <span style={{ fontSize: '.72rem', color: '#00E5B4', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase' }}>All-Age Detection</span>
+              <span style={{ fontSize: '.72rem', color: '#00E5B4', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase' }}>Dataset Age Range</span>
             </div>
             <h3 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.05rem', fontWeight: 700, color: '#DCE8FF', marginBottom: 6 }}>
-              CKD doesn't only affect adults
+              This project reflects adult CKD data
             </h3>
             <p style={{ color: '#7A92BC', fontSize: '.85rem', lineHeight: 1.65, maxWidth: 380 }}>
-              Children are increasingly diagnosed with chronic kidney disease. Our system applies age-adjusted clinical reference ranges for every patient.
+              The dataset used in this project spans ages 20 to 90 years, so the model groups patients into young adult, adult, and senior categories.
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignContent: 'flex-start' }}>
