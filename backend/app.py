@@ -213,6 +213,98 @@ def get_defaulted_fields(raw_data):
     return defaulted
 
 
+# ── Clinical Risk Adjustment ──────────────────────────────────────────────────
+# Blends calibrated model probability with a feature-based clinical score to
+# prevent extreme swings for borderline patients.  The model drives 70% of
+# the final probability; the clinical score provides a 30% guardrail based
+# on established CKD risk indicators.
+def clinical_risk_adjustment(model_prob, data):
+    """Return (blended_probability, overridden_prediction)."""
+
+    gfr       = float(data.get('GFR', FEATURE_MEDIANS.get('GFR', 90.0)))
+    creat     = float(data.get('SerumCreatinine', FEATURE_MEDIANS.get('SerumCreatinine', 1.1)))
+    protein   = float(data.get('ProteinInUrine', FEATURE_MEDIANS.get('ProteinInUrine', 0.15)))
+    hemo      = float(data.get('HemoglobinLevels', FEATURE_MEDIANS.get('HemoglobinLevels', 12.5)))
+    family    = float(data.get('FamilyHistoryKidneyDisease', FEATURE_MEDIANS.get('FamilyHistoryKidneyDisease', 0.0)))
+    age       = float(data.get('Age', FEATURE_MEDIANS.get('Age', 55.0)))
+
+    # --- Build a 0-1 clinical risk score from key CKD indicators ---
+    scores = []
+
+    # GFR (most important CKD staging criterion)
+    if gfr >= 90:
+        scores.append(0.05)
+    elif gfr >= 60:
+        scores.append(0.25)
+    elif gfr >= 45:
+        scores.append(0.55)
+    elif gfr >= 30:
+        scores.append(0.75)
+    elif gfr >= 15:
+        scores.append(0.90)
+    else:
+        scores.append(1.00)
+
+    # Serum Creatinine (ratio to upper-normal 1.2 mg/dL)
+    cr_ratio = creat / 1.2
+    if cr_ratio <= 1.0:
+        scores.append(0.05)
+    elif cr_ratio <= 1.5:
+        scores.append(0.25)
+    elif cr_ratio <= 2.5:
+        scores.append(0.50)
+    elif cr_ratio <= 3.5:
+        scores.append(0.75)
+    else:
+        scores.append(0.95)
+
+    # Proteinuria
+    if protein < 0.15:
+        scores.append(0.05)
+    elif protein < 0.5:
+        scores.append(0.20)
+    elif protein < 1.5:
+        scores.append(0.45)
+    elif protein < 3.0:
+        scores.append(0.70)
+    else:
+        scores.append(0.90)
+
+    # Hemoglobin (low = anemia, common in CKD)
+    if hemo >= 12.0:
+        scores.append(0.05)
+    elif hemo >= 10.0:
+        scores.append(0.35)
+    else:
+        scores.append(0.70)
+
+    # Family history (binary risk bump)
+    scores.append(0.30 if family >= 1 else 0.05)
+
+    # Age (higher age = higher baseline risk)
+    if age < 40:
+        scores.append(0.05)
+    elif age < 60:
+        scores.append(0.15)
+    else:
+        scores.append(0.30)
+
+    # Weighted average — GFR and creatinine carry the most clinical weight
+    weights = [0.30, 0.25, 0.18, 0.10, 0.10, 0.07]
+    clinical_score = sum(s * w for s, w in zip(scores, weights))
+
+    # Blend: 65% model + 35% clinical
+    blended = 0.65 * model_prob + 0.35 * clinical_score
+
+    # Clamp to [0.01, 0.99] — never show absolute 0% or 100%
+    blended = max(0.01, min(0.99, blended))
+
+    # Use blended probability for the binary label (threshold 0.45)
+    pred = 1 if blended >= 0.45 else 0
+
+    return blended, pred
+
+
 def build_clinical_summary(data, pred):
     age = float(data.get('Age', FEATURE_MEDIANS.get('Age', 55.0)))
     gfr = float(data.get('GFR', FEATURE_MEDIANS.get('GFR', 90.0)))
@@ -439,8 +531,8 @@ def predict():
 
     features = [float(data.get(f, FEATURE_MEDIANS.get(f, 0.0))) for f in FEATURES]
     scaled   = scaler.transform([features])
-    pred     = int(model.predict(scaled)[0])
-    prob     = float(model.predict_proba(scaled)[0][1])
+    raw_prob = float(model.predict_proba(scaled)[0][1])
+    prob, pred = clinical_risk_adjustment(raw_prob, data)
     gfr      = float(data.get('GFR', FEATURE_MEDIANS.get('GFR', 90.0)))
 
     age_group, age_label       = get_age_group(age)
