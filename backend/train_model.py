@@ -5,6 +5,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTENC
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
@@ -50,9 +51,9 @@ smote = SMOTENC(
 )
 X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
 
-neg = int((y_train_sm == 0).sum())
-pos = int((y_train_sm == 1).sum())
-scale = neg / pos
+# SMOTE already balanced the classes to 1:1 — no need for scale_pos_weight.
+# Using both would double-boost the positive class and produce overconfident
+# probabilities for borderline patients.
 
 MODEL_MAP = {
     'Logistic Regression': LogisticRegression(
@@ -75,10 +76,9 @@ MODEL_MAP = {
     ),
     'XGBoost': XGBClassifier(
         objective='binary:logistic',
-        n_estimators=200,
-        learning_rate=0.1,
-        max_depth=6,
-        scale_pos_weight=scale,
+        n_estimators=150,
+        learning_rate=0.05,
+        max_depth=4,
         random_state=42,
         eval_metric='logloss',
     ),
@@ -105,9 +105,19 @@ summary_df = pd.DataFrame(summary).T.sort_values('F1-Score', ascending=False)
 summary_df = summary_df.reset_index().rename(columns={'index': 'Model'})
 winner = 'XGBoost'
 
+# Wrap the trained XGBoost model with Platt-scaling (sigmoid) calibration.
+# This maps raw XGBoost confidence scores to properly calibrated probabilities
+# so that a predicted 40% actually corresponds to ~40% observed CKD rate.
+calibrated_xgb = CalibratedClassifierCV(
+    MODEL_MAP['XGBoost'],
+    method='sigmoid',
+    cv=5,
+)
+calibrated_xgb.fit(X_train_sm, y_train_sm)
+
 os.makedirs('model', exist_ok=True)
 joblib.dump(scaler, 'model/scaler.pkl')
-joblib.dump(MODEL_MAP['XGBoost'], 'model/xgb_model.pkl')
+joblib.dump(calibrated_xgb, 'model/xgb_model.pkl')
 joblib.dump(MODEL_MAP['Random Forest'], 'model/rf_model.pkl')
 
 metadata = {
