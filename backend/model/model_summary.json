@@ -14,11 +14,11 @@
     {
       "model": "XGBoost",
       "metrics": {
-        "Accuracy": 0.8675,
-        "Precision": 0.6017,
-        "Recall": 0.6281,
-        "F1-Score": 0.6124,
-        "AUC-ROC": 0.7608
+        "Accuracy": 0.8133,
+        "Precision": 0.5742,
+        "Recall": 0.6429,
+        "F1-Score": 0.5859,
+        "AUC-ROC": 0.7487
       }
     },
     {
@@ -65,11 +65,11 @@
       "AUC-ROC": 0.6654
     },
     "XGBoost": {
-      "Accuracy": 0.8675,
-      "Precision": 0.6017,
-      "Recall": 0.6281,
-      "F1-Score": 0.6124,
-      "AUC-ROC": 0.7608
+      "Accuracy": 0.8133,
+      "Precision": 0.5742,
+      "Recall": 0.6429,
+      "F1-Score": 0.5859,
+      "AUC-ROC": 0.7487
     }
   }
 }
