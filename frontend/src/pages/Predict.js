@@ -299,26 +299,7 @@ export default function Predict(){
         </div>
       </div>
 
-      {/* Model indicator strip */}
-      <div style={{
-        background:'linear-gradient(135deg,rgba(0,212,168,.07) 0%,rgba(91,127,255,.07) 100%)',
-        border:'1px solid rgba(0,212,168,.2)',
-        borderRadius:12,padding:'10px 16px',marginBottom:'1.4rem',
-        display:'flex',alignItems:'center',gap:12,
-        boxShadow:'0 4px 20px rgba(0,212,168,.06)',
-      }}>
-        <div style={{width:8,height:8,borderRadius:'50%',background:'#00D4A8',animation:'blink 2s ease infinite',boxShadow:'0 0 8px #00D4A8'}}/>
-        <span style={{fontSize:'.8rem',color:'#8BA0C8'}}>
-          Auto-selected model:{' '}
-          <span style={{color:'#A97FFF',fontWeight:700}}>{modelInfo?.winner || 'Random Forest'}</span>
-          <span style={{color:'#4A5E80',margin:'0 8px'}}>·</span>
-          Accuracy <span style={{color:'#E8EEFF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['Accuracy'] ?? 86.95) * 100}%</span>
-          <span style={{color:'#4A5E80',margin:'0 8px'}}>·</span>
-          F1-Score <span style={{color:'#E8EEFF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['F1-Score'] ?? 0.6145) * 100}%</span>
-          <span style={{color:'#4A5E80',margin:'0 8px'}}>·</span>
-          AUC-ROC <span style={{color:'#E8EEFF',fontFamily:'JetBrains Mono,monospace'}}>{(modelInfo?.models?.[modelInfo.winner]?.['AUC-ROC'] ?? 0.7468) * 100}%</span>
-        </span>
-      </div>
+
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 268px',gap:'1.5rem',alignItems:'start'}}>
 
