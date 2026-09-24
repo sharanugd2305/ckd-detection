@@ -255,13 +255,13 @@ export default function Home() {
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5B4', display: 'inline-block', animation: 'blink 2s ease infinite' }} />
-              <span style={{ fontSize: '.72rem', color: '#00E5B4', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase' }}>Dataset Age Range</span>
+              <span style={{ fontSize: '.72rem', color: '#00E5B4', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase' }}>Age Range</span>
             </div>
             <h3 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.05rem', fontWeight: 700, color: '#DCE8FF', marginBottom: 6 }}>
-              This project reflects adult CKD data
+              Adult CKD Data (Ages 20-90)
             </h3>
             <p style={{ color: '#7A92BC', fontSize: '.85rem', lineHeight: 1.65, maxWidth: 380 }}>
-              The dataset used in this project spans ages 20 to 90 years, so the model groups patients into young adult, adult, and senior categories.
+              Patients are grouped into young adult, adult, and senior categories based on an age range of 20 to 90 years.
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignContent: 'flex-start' }}>
