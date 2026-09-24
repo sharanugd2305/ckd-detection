@@ -155,6 +155,38 @@ function DashboardContent() {
     average: records.length ? (records.reduce((sum, record) => sum + Number(record.probability || 0), 0) / records.length).toFixed(1) : '0.0',
   }), [records]);
 
+  const summaryInsights = useMemo(() => {
+    if (!records.length) {
+      return {
+        latest: null,
+        highestRisk: null,
+        riskBreakdown: {
+          'Low Risk': 0,
+          'Moderate Risk': 0,
+          'High Risk': 0,
+          'Very High Risk': 0,
+        },
+      };
+    }
+
+    const riskBreakdown = {
+      'Low Risk': 0,
+      'Moderate Risk': 0,
+      'High Risk': 0,
+      'Very High Risk': 0,
+    };
+
+    records.forEach((record) => {
+      const level = record.risk_level || 'Low Risk';
+      if (riskBreakdown[level] !== undefined) riskBreakdown[level] += 1;
+    });
+
+    const latest = records[0];
+    const highestRisk = records.reduce((max, record) => Number(record.probability || 0) > Number(max.probability || 0) ? record : max, records[0]);
+
+    return { latest, highestRisk, riskBreakdown };
+  }, [records]);
+
   const remove = async (id) => {
     try { await request('delete', `/history/${id}`); setRecords(previous => previous.filter(record => record.id !== id)); if (selected === id) setSelected(null); }
     catch (err) { setError(err.response?.data?.error || 'That prediction could not be deleted.'); }
@@ -172,17 +204,58 @@ function DashboardContent() {
         {[['Assessments', stats.total, '#5B7FFF'], ['CKD detected', stats.detected, colors.negative], ['Average probability', `${stats.average}%`, '#9B6DFF']].map(([label, value, color]) => <div key={label} style={{ background: '#0D1526', border: `1px solid ${colors.line}`, borderRadius: 12, padding: '1.2rem' }}><div style={{ color: colors.muted, fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em' }}>{label}</div><div style={{ color, fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.7rem', fontWeight: 700, marginTop: 7 }}>{value}</div></div>)}
       </div>
 
+      {records.length > 0 && (
+        <div style={{ background: '#0D1526', border: `1px solid ${colors.line}`, borderRadius: 14, padding: '1.2rem 1.3rem', marginBottom: '1.5rem' }}>
+          <div style={{ color: '#DCE8FF', fontSize: '.78rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>Clinical overview</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
+            <div style={{ background: '#091225', border: `1px solid ${colors.line}`, borderRadius: 10, padding: '0.9rem 1rem' }}>
+              <div style={{ color: colors.muted, fontSize: '.68rem', letterSpacing: '.08em', textTransform: 'uppercase' }}>Latest assessment</div>
+              <div style={{ color: '#DCE8FF', fontWeight: 700, marginTop: 6 }}>{summaryInsights.latest?.label || 'No data'}</div>
+              <div style={{ color: colors.muted, fontSize: '.8rem', marginTop: 4 }}>{summaryInsights.latest ? `${summaryInsights.latest.probability}% probability` : 'No results saved yet'}</div>
+            </div>
+            <div style={{ background: '#091225', border: `1px solid ${colors.line}`, borderRadius: 10, padding: '0.9rem 1rem' }}>
+              <div style={{ color: colors.muted, fontSize: '.68rem', letterSpacing: '.08em', textTransform: 'uppercase' }}>Highest risk</div>
+              <div style={{ color: '#DCE8FF', fontWeight: 700, marginTop: 6 }}>{summaryInsights.highestRisk?.label || 'No data'}</div>
+              <div style={{ color: colors.muted, fontSize: '.8rem', marginTop: 4 }}>{summaryInsights.highestRisk ? `${summaryInsights.highestRisk.probability}% at ${formatDate(summaryInsights.highestRisk.created_at)}` : 'No elevated cases yet'}</div>
+            </div>
+            <div style={{ background: '#091225', border: `1px solid ${colors.line}`, borderRadius: 10, padding: '0.9rem 1rem' }}>
+              <div style={{ color: colors.muted, fontSize: '.68rem', letterSpacing: '.08em', textTransform: 'uppercase' }}>Risk mix</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                {Object.entries(summaryInsights.riskBreakdown).map(([level, count]) => (
+                  <span key={level} style={{ background: '#101C35', border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', color: '#DCE8FF', fontSize: '.72rem' }}>{level}: {count}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {error && <div style={{ color: colors.negative, background: 'rgba(255,94,114,.08)', border: '1px solid rgba(255,94,114,.25)', borderRadius: 10, padding: '12px 14px', marginBottom: '1rem' }}>{error}</div>}
       {loading ? <div style={{ color: colors.muted, padding: '2rem 0' }}>Loading your reports...</div> : records.length === 0 ? <div style={{ background: '#0D1526', border: `1px solid ${colors.line}`, borderRadius: 14, padding: '3rem 1.5rem', textAlign: 'center' }}><div style={{ color: '#DCE8FF', fontWeight: 700, marginBottom: 8 }}>No saved predictions yet</div><p style={{ color: colors.muted, margin: 0 }}>Run an assessment while signed in and it will appear here.</p></div> : (
         <div style={{ display: 'grid', gap: 10 }}>
           {records.map(record => {
             const isSelected = selected === record.id;
             const positive = record.label === 'CKD Detected';
+            const details = record.result_details || {};
+            const warningCount = (details.early_warnings || []).length;
+            const recommendationCount = (details.recommendations || []).length;
+            const riskFactors = details.risk_factors || [];
+            const ageLabel = details.age_label || 'Not available';
+
             return <section key={record.id} style={{ background: '#0D1526', border: `1px solid ${isSelected ? '#2D6AFF' : colors.line}`, borderRadius: 14, padding: '1.15rem 1.3rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                 <div><div style={{ color: colors.muted, fontSize: '.75rem', marginBottom: 7 }}>{formatDate(record.created_at)}</div><div style={{ color: positive ? colors.negative : colors.positive, fontWeight: 700 }}>{record.label}</div></div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>PROBABILITY</div><strong style={{ color: '#DCE8FF' }}>{record.probability}%</strong></div><div><div style={{ color: colors.muted, fontSize: '.68rem' }}>RISK</div><strong style={{ color: record.result_details?.risk_color || colors.muted }}>{record.risk_level}</strong></div><button onClick={() => setSelected(isSelected ? null : record.id)} style={{ border: '1px solid #2D6AFF', background: 'rgba(45,106,255,.1)', color: '#DCE8FF', borderRadius: 8, padding: '8px 11px', cursor: 'pointer' }}>{isSelected ? 'Hide details' : 'View details'}</button><button onClick={() => downloadRecordPdf(record)} style={{ border: '1px solid rgba(0,229,180,.35)', background: 'rgba(0,229,180,.08)', color: '#00E5B4', borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>PDF</button><button aria-label="Delete prediction" onClick={() => remove(record.id)} style={{ border: '1px solid rgba(255,94,114,.35)', background: 'transparent', color: colors.negative, borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>Delete</button></div>
               </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: '0.9rem', color: colors.muted, fontSize: '.72rem' }}>
+                <span style={{ border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', background: '#111d36' }}>Stage: {record.ckd_stage || details.stage_desc || 'Not available'}</span>
+                <span style={{ border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', background: '#111d36' }}>Age group: {ageLabel}</span>
+                <span style={{ border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', background: '#111d36' }}>Alerts: {warningCount}</span>
+                <span style={{ border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', background: '#111d36' }}>Guidance: {recommendationCount}</span>
+                {riskFactors.length > 0 && <span style={{ border: `1px solid ${colors.line}`, borderRadius: 999, padding: '5px 8px', background: '#111d36' }}>Risk factors: {riskFactors.slice(0, 2).join(', ')}</span>}
+              </div>
+
               {isSelected && <ResultDetails record={record} />}
             </section>;
           })}
