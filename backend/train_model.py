@@ -105,12 +105,14 @@ summary_df = pd.DataFrame(summary).T.sort_values('F1-Score', ascending=False)
 summary_df = summary_df.reset_index().rename(columns={'index': 'Model'})
 winner = 'XGBoost'
 
-# Wrap the trained XGBoost model with Platt-scaling (sigmoid) calibration.
-# This maps raw XGBoost confidence scores to properly calibrated probabilities
-# so that a predicted 40% actually corresponds to ~40% observed CKD rate.
+# Wrap the trained XGBoost model with isotonic regression calibration.
+# Isotonic is non-parametric — it fits the actual empirical calibration
+# curve from out-of-fold predictions rather than assuming a sigmoid shape.
+# This handles XGBoost's sharp, non-linear probability steps much better
+# than Platt scaling (sigmoid), producing smoother borderline transitions.
 calibrated_xgb = CalibratedClassifierCV(
     MODEL_MAP['XGBoost'],
-    method='sigmoid',
+    method='isotonic',
     cv=5,
 )
 calibrated_xgb.fit(X_train_sm, y_train_sm)
