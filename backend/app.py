@@ -214,10 +214,23 @@ def get_defaulted_fields(raw_data):
 
 
 # ── Clinical Risk Adjustment ──────────────────────────────────────────────────
-# Blends calibrated model probability with a feature-based clinical score to
-# prevent extreme swings for borderline patients.  The model drives 70% of
-# the final probability; the clinical score provides a 30% guardrail based
-# on established CKD risk indicators.
+# Blends the calibrated model probability with a feature-based clinical score
+# to prevent extreme swings for borderline patients.
+#
+# Design rationale (v2 — recalibrated for moderate cases):
+#   • Model drives 75% of the final probability; clinical score is a 25%
+#     guardrail, not a co-equal vote.  This prevents the heuristic from
+#     pushing borderline model outputs over the CKD threshold on its own.
+#   • GFR 60-89 (KDIGO Stage 1-2, "Mildly Decreased") scores 0.15 instead of
+#     0.25.  Stage 1-2 alone is not a strong CKD signal; the lower score
+#     avoids false alarm for patients with slightly reduced but stable GFR.
+#   • Proteinuria 0.5-1.5 g/day scores 0.35 instead of 0.45.  This range is
+#     borderline / mild proteinuria — significant but not nephrotic-range.
+#     The original 0.45 was too aggressive for values near 0.5 g/day.
+#   • All other cutoffs (GFR <45, creatinine ratio, hemoglobin, age, family
+#     history) are unchanged — they remain clinically defensible.
+#   • The CKD threshold stays at 0.45 — the problem was upstream inflation,
+#     not the threshold itself.
 def clinical_risk_adjustment(model_prob, data):
     """Return (blended_probability, overridden_prediction)."""
 
@@ -231,57 +244,61 @@ def clinical_risk_adjustment(model_prob, data):
     # --- Build a 0-1 clinical risk score from key CKD indicators ---
     scores = []
 
-    # GFR (most important CKD staging criterion)
+    # GFR (most important CKD staging criterion — KDIGO 2012 categories)
     if gfr >= 90:
-        scores.append(0.05)
+        scores.append(0.05)   # G1 — Normal or high: minimal clinical concern
     elif gfr >= 60:
-        scores.append(0.25)
+        scores.append(0.15)   # G2 — Mildly decreased: watch-and-wait, not alarming
+                               # (was 0.25; lowered because Stage 1-2 alone is not
+                               # a strong CKD signal and was inflating borderline cases)
     elif gfr >= 45:
-        scores.append(0.55)
+        scores.append(0.55)   # G3a — Mildly to moderately decreased: clear concern
     elif gfr >= 30:
-        scores.append(0.75)
+        scores.append(0.75)   # G3b — Moderately to severely decreased
     elif gfr >= 15:
-        scores.append(0.90)
+        scores.append(0.90)   # G4 — Severely decreased
     else:
-        scores.append(1.00)
+        scores.append(1.00)   # G5 — Kidney failure
 
     # Serum Creatinine (ratio to upper-normal 1.2 mg/dL)
     cr_ratio = creat / 1.2
     if cr_ratio <= 1.0:
-        scores.append(0.05)
+        scores.append(0.05)   # Normal range
     elif cr_ratio <= 1.5:
-        scores.append(0.25)
+        scores.append(0.25)   # Mildly elevated (creat ~1.2-1.8): moderate concern
     elif cr_ratio <= 2.5:
-        scores.append(0.50)
+        scores.append(0.50)   # Moderately elevated (creat ~1.8-3.0)
     elif cr_ratio <= 3.5:
-        scores.append(0.75)
+        scores.append(0.75)   # Severely elevated
     else:
-        scores.append(0.95)
+        scores.append(0.95)   # Very severely elevated
 
     # Proteinuria
     if protein < 0.15:
-        scores.append(0.05)
+        scores.append(0.05)   # Normal: negligible
     elif protein < 0.5:
-        scores.append(0.20)
+        scores.append(0.20)   # Mildly elevated: mild concern
     elif protein < 1.5:
-        scores.append(0.45)
+        scores.append(0.35)   # Borderline/mild proteinuria: moderate concern
+                               # (was 0.45; lowered because 0.5-1.0 g/day is
+                               # borderline, not frank nephrotic-range proteinuria)
     elif protein < 3.0:
-        scores.append(0.70)
+        scores.append(0.70)   # Moderate-heavy proteinuria: high concern
     else:
-        scores.append(0.90)
+        scores.append(0.90)   # Nephrotic-range: very high concern
 
-    # Hemoglobin (low = anemia, common in CKD)
+    # Hemoglobin (low = anemia, a common CKD complication)
     if hemo >= 12.0:
-        scores.append(0.05)
+        scores.append(0.05)   # Normal
     elif hemo >= 10.0:
-        scores.append(0.35)
+        scores.append(0.35)   # Mild anemia: moderate concern
     else:
-        scores.append(0.70)
+        scores.append(0.70)   # Severe anemia: high concern
 
     # Family history (binary risk bump)
     scores.append(0.30 if family >= 1 else 0.05)
 
-    # Age (higher age = higher baseline risk)
+    # Age (higher age = higher baseline CKD risk)
     if age < 40:
         scores.append(0.05)
     elif age < 60:
@@ -293,13 +310,15 @@ def clinical_risk_adjustment(model_prob, data):
     weights = [0.30, 0.25, 0.18, 0.10, 0.10, 0.07]
     clinical_score = sum(s * w for s, w in zip(scores, weights))
 
-    # Blend: 65% model + 35% clinical
-    blended = 0.65 * model_prob + 0.35 * clinical_score
+    # Blend: 75% model (primary driver) + 25% clinical guardrail
+    # Reduced from 65/35 to 75/25 so the heuristic cannot push a
+    # borderline model output over the 0.45 threshold on its own.
+    blended = 0.75 * model_prob + 0.25 * clinical_score
 
     # Clamp to [0.01, 0.99] — never show absolute 0% or 100%
     blended = max(0.01, min(0.99, blended))
 
-    # Use blended probability for the binary label (threshold 0.45)
+    # Binary CKD label — threshold 0.45 (unchanged)
     pred = 1 if blended >= 0.45 else 0
 
     return blended, pred
