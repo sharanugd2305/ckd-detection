@@ -121,9 +121,9 @@ scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))
 
 FEATURES = [
     'Age', 'BMI', 'HbA1c', 'SerumCreatinine', 'BUNLevels',
-    'GFR', 'HemoglobinLevels', 'CholesterolTotal',
+    'GFR', 'HemoglobinLevels', 'SystolicBP',
     'ProteinInUrine', 'UrinaryTractInfections',
-    'FamilyHistoryKidneyDisease'
+    'FamilyHistoryKidneyDisease', 'Gender', 'Smoking'
 ]
 
 try:
@@ -139,10 +139,12 @@ except Exception:
         'BUNLevels': 18.0,
         'GFR': 90.0,
         'HemoglobinLevels': 12.5,
-        'CholesterolTotal': 180.0,
+        'SystolicBP': 120.0,
         'ProteinInUrine': 0.15,
         'UrinaryTractInfections': 0.0,
         'FamilyHistoryKidneyDisease': 0.0,
+        'Gender': 0.0,
+        'Smoking': 0.0,
     }
 
 
@@ -240,6 +242,7 @@ def clinical_risk_adjustment(model_prob, data):
     hemo      = float(data.get('HemoglobinLevels', FEATURE_MEDIANS.get('HemoglobinLevels', 12.5)))
     family    = float(data.get('FamilyHistoryKidneyDisease', FEATURE_MEDIANS.get('FamilyHistoryKidneyDisease', 0.0)))
     age       = float(data.get('Age', FEATURE_MEDIANS.get('Age', 55.0)))
+    sbp       = float(data.get('SystolicBP', FEATURE_MEDIANS.get('SystolicBP', 120.0)))
 
     # --- Build a 0-1 clinical risk score from key CKD indicators ---
     scores = []
@@ -306,8 +309,20 @@ def clinical_risk_adjustment(model_prob, data):
     else:
         scores.append(0.30)
 
+    # Systolic Blood Pressure (hypertension is #1 modifiable CKD risk factor)
+    if sbp < 120:
+        scores.append(0.05)   # Normal
+    elif sbp < 130:
+        scores.append(0.12)   # Elevated
+    elif sbp < 140:
+        scores.append(0.30)   # Stage 1 HTN
+    elif sbp < 160:
+        scores.append(0.55)   # Stage 2 HTN
+    else:
+        scores.append(0.80)   # Severe HTN — strong CKD driver
+
     # Weighted average — GFR and creatinine carry the most clinical weight
-    weights = [0.30, 0.25, 0.18, 0.10, 0.10, 0.07]
+    weights = [0.28, 0.22, 0.16, 0.09, 0.09, 0.09, 0.07]
     clinical_score = sum(s * w for s, w in zip(scores, weights))
 
     # Blend: 75% model (primary driver) + 25% clinical guardrail
@@ -332,6 +347,9 @@ def build_clinical_summary(data, pred):
     protein = float(data.get('ProteinInUrine', FEATURE_MEDIANS.get('ProteinInUrine', 0.15)))
     uti = float(data.get('UrinaryTractInfections', FEATURE_MEDIANS.get('UrinaryTractInfections', 0.0)))
     family = float(data.get('FamilyHistoryKidneyDisease', FEATURE_MEDIANS.get('FamilyHistoryKidneyDisease', 0.0)))
+    sbp = float(data.get('SystolicBP', FEATURE_MEDIANS.get('SystolicBP', 120.0)))
+    smoking = float(data.get('Smoking', FEATURE_MEDIANS.get('Smoking', 0.0)))
+    gender = float(data.get('Gender', FEATURE_MEDIANS.get('Gender', 0.0)))
 
     factors = []
     if age >= 60:
@@ -348,6 +366,10 @@ def build_clinical_summary(data, pred):
         factors.append(f"recurrent UTIs ({int(uti)} episodes)")
     if family == 1:
         factors.append("family history of kidney disease")
+    if sbp >= 130:
+        factors.append(f"elevated blood pressure ({int(sbp)} mmHg)")
+    if smoking == 1:
+        factors.append("active smoker")
 
     if pred == 1:
         if factors:
