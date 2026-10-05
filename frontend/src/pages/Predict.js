@@ -11,10 +11,12 @@ const FIELDS=[
   {key:'BUNLevels',                  label:'BUN Levels',                    unit:'mg/dL',  min:0,  max:150,step:.1,  normal:'8–25',              desc:'Blood urea nitrogen — waste filtered by kidneys'},
   {key:'GFR',                        label:'GFR (eGFR)',                    unit:'mL/min', min:0,  max:150,step:.1,  normal:'≥ 90',              desc:'Gold standard for measuring kidney function'},
   {key:'HemoglobinLevels',           label:'Hemoglobin',                    unit:'g/dL',   min:0,  max:25, step:.1,  normal:'12–17',             desc:'Low levels indicate anemia — common in CKD'},
-  {key:'CholesterolTotal',           label:'Total Cholesterol',             unit:'mg/dL',  min:0,  max:400,step:1,   normal:'< 200',             desc:'Cardiovascular risk linked to CKD progression'},
+  {key:'SystolicBP',                 label:'Systolic Blood Pressure',       unit:'mmHg',   min:60, max:250,step:1,   normal:'< 120',             desc:'Hypertension is the #1 modifiable CKD risk factor'},
   {key:'ProteinInUrine',             label:'Protein in Urine',              unit:'g/day',  min:0,  max:20, step:.01, normal:'< 0.15',            desc:'Protein leakage is a direct sign of kidney damage'},
   {key:'UrinaryTractInfections',     label:'UTI Count',                     unit:'count',  min:0,  max:20, step:1,   normal:'0',                 desc:'Recurrent UTIs can cause kidney scarring'},
   {key:'FamilyHistoryKidneyDisease', label:'Family History',                unit:'0 or 1', min:0,  max:1,  step:1,   normal:'0 = No, 1 = Yes',  desc:'Genetic predisposition is a key CKD risk factor'},
+  {key:'Gender',                     label:'Gender',                        type:'toggle', options:[{val:0,label:'Female'},{val:1,label:'Male'}],  desc:'Biological sex affects kidney function baselines'},
+  {key:'Smoking',                    label:'Smoking',                       type:'toggle', options:[{val:0,label:'No'},{val:1,label:'Yes'}],        desc:'Smoking damages kidney blood vessels and accelerates CKD'},
 ];
 
 const BMI_EXTRA_FIELDS=[
@@ -37,8 +39,8 @@ const init={
 };
 
 const SECTION_FIELDS=[
-  {title:'Personal Details', subtitle:'Patient profile and background', keys:['Age','BMI','FamilyHistoryKidneyDisease']},
-  {title:'Blood & Lab Markers', subtitle:'Core blood chemistry and kidney function', keys:['HbA1c','SerumCreatinine','BUNLevels','GFR','HemoglobinLevels','CholesterolTotal']},
+  {title:'Personal Details', subtitle:'Patient profile and background', keys:['Age','BMI','Gender','Smoking','FamilyHistoryKidneyDisease']},
+  {title:'Blood & Lab Markers', subtitle:'Core blood chemistry and kidney function', keys:['HbA1c','SerumCreatinine','BUNLevels','GFR','HemoglobinLevels','SystolicBP']},
   {title:'Urine & Infection Profile', subtitle:'Urinary findings and infection history', keys:['ProteinInUrine','UrinaryTractInfections']},
 ];
 
@@ -120,7 +122,7 @@ export default function Predict(){
       .catch(()=>setModelInfo(null));
   },[]);
 
-  const progress=useMemo(()=>Math.round((ALL_KEYS.filter(k=>form[k]!=='').length/ALL_KEYS.length)*100),[form]);
+  const progress=useMemo(()=>Math.round((ALL_KEYS.filter(k=>form[k]!=='' && form[k]!==null && form[k]!==undefined).length/ALL_KEYS.length)*100),[form]);
   const set=(k,v)=>setForm(p=>({...p,[k]:v}));
 
   const buildPayload=(values,overrides={})=>{
@@ -380,6 +382,44 @@ export default function Predict(){
                       );
                     }
 
+                    // ── Toggle renderer (Gender, Smoking) ──
+                    if (f.type === 'toggle') {
+                      const selected = form[f.key];
+                      return (
+                        <div key={f.key} style={{
+                          background:'rgba(7,8,26,0.6)',
+                          border:`1px solid ${selected!==''?'#2A3060':'#1E2247'}`,
+                          borderRadius:10,padding:'1rem',transition:'border-color .2s, box-shadow .2s',
+                          boxShadow:selected!==''?'0 4px 16px rgba(91,127,255,.08)':'none',
+                        }}>
+                          <div style={{marginBottom:8}}>
+                            <label style={{fontSize:'.8rem',color:'#8BA0C8',fontWeight:500}}>{f.label}</label>
+                          </div>
+                          <div style={{display:'flex',gap:8}}>
+                            {f.options.map(opt=>(
+                              <button
+                                key={opt.val}
+                                onClick={()=>set(f.key, selected===opt.val ? '' : opt.val)}
+                                style={{
+                                  flex:1,padding:'9px 0',borderRadius:8,border:'none',cursor:'pointer',
+                                  fontWeight:700,fontSize:'.85rem',fontFamily:'Space Grotesk,sans-serif',
+                                  transition:'all .2s',
+                                  background: selected===opt.val
+                                    ? 'linear-gradient(135deg,#5B7FFF,#A97FFF)'
+                                    : 'rgba(30,34,71,0.7)',
+                                  color: selected===opt.val ? '#fff' : '#8BA0C8',
+                                  boxShadow: selected===opt.val ? '0 4px 14px rgba(91,127,255,.35)' : 'none',
+                                  outline: selected===opt.val ? 'none' : '1px solid #1E2247',
+                                }}
+                              >{opt.label}</button>
+                            ))}
+                          </div>
+                          <div style={{marginTop:8,fontSize:'.67rem',color:'#4A5E80',lineHeight:1.4}}>{f.desc}</div>
+                        </div>
+                      );
+                    }
+
+                    // ── Default number input ──
                     const isFilled=form[f.key]!=='';
                     return (
                       <div key={f.key} style={{
