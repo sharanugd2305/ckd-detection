@@ -19,9 +19,9 @@ df = pd.read_csv('../data/ckd_1659.csv')
 
 FEATURES = [
     'Age', 'BMI', 'HbA1c', 'SerumCreatinine', 'BUNLevels',
-    'GFR', 'HemoglobinLevels', 'CholesterolTotal',
+    'GFR', 'HemoglobinLevels', 'SystolicBP',
     'ProteinInUrine', 'UrinaryTractInfections',
-    'FamilyHistoryKidneyDisease'
+    'FamilyHistoryKidneyDisease', 'Gender', 'Smoking'
 ]
 TARGET = 'Diagnosis'
 
@@ -42,6 +42,8 @@ X_test = scaler.transform(X_test_raw)
 categorical_idx = [
     FEATURES.index('UrinaryTractInfections'),
     FEATURES.index('FamilyHistoryKidneyDisease'),
+    FEATURES.index('Gender'),
+    FEATURES.index('Smoking'),
 ]
 smote = SMOTENC(
     categorical_features=categorical_idx,
