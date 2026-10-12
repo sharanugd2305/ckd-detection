@@ -88,3 +88,18 @@ body::before{
 
 .anim-fade-up{animation:fadeUp .5s ease both}
 .anim-fade-in{animation:fadeIn .4s ease both}
+
+.result-overview{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:1.2rem;
+  align-items:stretch;
+  margin-bottom:1.2rem;
+}
+
+.result-verdict{min-width:0}
+.result-details{display:flex;min-width:0;flex-direction:column;gap:.8rem}
+
+@media(max-width:850px){
+  .result-overview{grid-template-columns:minmax(0,1fr)}
+}
