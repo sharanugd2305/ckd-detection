@@ -3,14 +3,14 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg: #18232B;
-  --surface: #202D36;
-  --surface-raised: #293943;
-  --surface-inset: #1C2932;
-  --surface-hover: #30414A;
-  --border: #3D505A;
-  --border-soft: #33454F;
-  --border-strong: #61747E;
+  --bg: #101922;
+  --surface: #17232E;
+  --surface-raised: #1E2D38;
+  --surface-inset: #131F28;
+  --surface-hover: #263743;
+  --border: #354752;
+  --border-soft: #2A3B46;
+  --border-strong: #536773;
   --text: #F2F6F8;
   --text-secondary: #CCD7DE;
   --text-muted: #A7B6C0;
