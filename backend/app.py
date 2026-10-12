@@ -127,47 +127,6 @@ FEATURES = [
 ]
 
 
-def get_feature_importance():
-    calibrated_classifiers = getattr(model, 'calibrated_classifiers_', None)
-    if not calibrated_classifiers:
-        raise RuntimeError('The calibrated CKD model does not expose feature importance.')
-
-    importance_vectors = []
-    for calibrated_classifier in calibrated_classifiers:
-        estimator = getattr(calibrated_classifier, 'estimator', None)
-        if estimator is None:
-            estimator = getattr(calibrated_classifier, 'base_estimator', None)
-        importances = getattr(estimator, 'feature_importances_', None)
-        if importances is None:
-            raise RuntimeError('A calibrated CKD estimator does not expose feature importance.')
-
-        importances = np.asarray(importances, dtype=float)
-        if (
-            importances.shape != (len(FEATURES),)
-            or not np.all(np.isfinite(importances))
-            or np.any(importances < 0)
-        ):
-            raise RuntimeError('The CKD model returned invalid feature importance values.')
-        importance_vectors.append(importances)
-
-    mean_importances = np.mean(importance_vectors, axis=0)
-    total_importance = float(mean_importances.sum())
-    if not np.isfinite(total_importance) or total_importance <= 0:
-        raise RuntimeError('The CKD model returned no usable feature importance values.')
-
-    ranked_importances = sorted(
-        zip(FEATURES, mean_importances),
-        key=lambda item: item[1],
-        reverse=True,
-    )
-    return [
-        {'feature': feature, 'importance': round(float(value / total_importance * 100), 2)}
-        for feature, value in ranked_importances
-    ]
-
-
-FEATURE_IMPORTANCE = get_feature_importance()
-
 try:
     DATASET = pd.read_csv(DATASET_PATH)
     FEATURE_MEDIANS = DATASET[FEATURES].median(numeric_only=False).to_dict()
@@ -644,7 +603,6 @@ def predict():
         'is_pediatric'    : age < 18,
         'is_young'        : age < 40,
         'model_name'      : MODEL_SUMMARY['winner'],
-        'feature_importance': FEATURE_IMPORTANCE,
         'history_saved'   : False,
     }
 
