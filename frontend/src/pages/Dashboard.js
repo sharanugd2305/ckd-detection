@@ -18,12 +18,17 @@ const FIELD_UNITS = {
   UrinaryTractInfections: 'count',
 };
 
-const colors = { positive: '#63D4BE', negative: '#F08A91', muted: '#A5B5C3', line: '#304454' };
+const colors = {
+  positive: 'var(--status-no-ckd)',
+  negative: 'var(--status-detected)',
+  muted: 'var(--text-muted)',
+  line: 'var(--border)',
+};
 const RISK_TONES = {
-  'Low Risk': '#63D4BE',
-  'Moderate Risk': '#E5BD68',
-  'High Risk': '#EF9A61',
-  'Very High Risk': '#F08A91',
+  'Low Risk': 'var(--risk-low)',
+  'Moderate Risk': 'var(--risk-moderate)',
+  'High Risk': 'var(--risk-high)',
+  'Very High Risk': 'var(--risk-very-high)',
 };
 
 function Icon({ name, size = 18, ...props }) {
@@ -75,6 +80,13 @@ function formatDate(value) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
+function getThemeRgb(variable) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  const match = value.match(/^#([0-9a-f]{6})$/i);
+  if (!match) throw new Error(`Theme variable ${variable} must contain a six-digit hex color.`);
+  return [0, 2, 4].map((offset) => Number.parseInt(match[1].slice(offset, offset + 2), 16));
+}
+
 function ResultDetails({ record }) {
   const details = record.result_details || {};
   const inputs = record.inputs || {};
@@ -85,8 +97,8 @@ function ResultDetails({ record }) {
       <div className="dashboard-detail-metrics">
         {[
           ['Probability', `${record.probability}%`, record.probability >= 50 ? colors.negative : colors.positive],
-          ['Risk level', record.risk_level, details.risk_color || colors.muted],
-          ['CKD stage', record.ckd_stage || details.stage_desc || 'Normal range', '#DFB25F'],
+          ['Risk level', record.risk_level, getRiskTone(record.risk_level)],
+          ['CKD stage', record.ckd_stage || details.stage_desc || 'Normal range', 'var(--risk-moderate)'],
           ['Model', details.model_name || 'Stored result', colors.muted],
         ].map(([label, value, color]) => (
           <div className="dashboard-detail-metric" key={label}>
@@ -142,13 +154,13 @@ function downloadRecordPdf(record) {
   const doc = new jsPDF();
   const generatedAt = new Date(record.created_at || Date.now()).toLocaleString();
 
-  doc.setFillColor(18, 23, 36);
+  doc.setFillColor(...getThemeRgb('--bg'));
   doc.rect(0, 0, 210, 28, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...getThemeRgb('--text'));
   doc.setFontSize(18);
   doc.text('CKD Risk Assessment Report', 14, 18);
 
-  doc.setTextColor(40, 60, 80);
+  doc.setTextColor(...getThemeRgb('--surface-text'));
   doc.setFontSize(10);
   doc.text(`Generated: ${generatedAt}`, 14, 36);
   doc.text(`Assessment: ${record.label}`, 14, 42);
@@ -161,12 +173,12 @@ function downloadRecordPdf(record) {
     }
 
     doc.setFontSize(12);
-    doc.setTextColor(45, 106, 255);
+    doc.setTextColor(...getThemeRgb('--paper-accent'));
     doc.text(title, 14, y);
     y += 8;
 
     doc.setFontSize(10);
-    doc.setTextColor(40, 60, 80);
+    doc.setTextColor(...getThemeRgb('--surface-text'));
     const wrapped = doc.splitTextToSize(lines.join('\n'), 180);
     doc.text(wrapped, 14, y);
     y += wrapped.length * 7 + 8;
