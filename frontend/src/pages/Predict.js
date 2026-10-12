@@ -73,7 +73,7 @@ const RC={
   info:   {bg:'rgba(91,127,255,.08)', border:'rgba(91,127,255,.22)', text:'#5B7FFF'},
 };
 
-const ageBadgeColor={under_20:'#A97FFF',youngadult:'#00D4A8',adult:'#F5A623',senior:'#FF4D6A'};
+const ageBadgeColor={under_20:'#5B7FFF',youngadult:'#00D4A8',adult:'#F5A623',senior:'#FF4D6A'};
 
 /* ── Radar ──────────────────────────────────────────────────── */
 function KidneyRadar({values}){
@@ -303,28 +303,28 @@ export default function Predict(){
   };
 
   return(
-    <div style={{maxWidth:1100,margin:'0 auto',padding:'2.5rem 2rem 6rem'}}>
+    <main className="predict-page" style={{maxWidth:1100,margin:'0 auto',padding:'2.5rem 2rem 6rem'}}>
 
       {/* Header */}
       <div style={{marginBottom:'2rem'}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
           <span style={{width:7,height:7,borderRadius:'50%',background:'#5B7FFF',display:'inline-block',animation:'blink 1.5s ease infinite',boxShadow:'0 0 8px #5B7FFF'}}/>
-          <span style={{fontSize:'.72rem',color:'#5B7FFF',fontWeight:600,letterSpacing:'.12em',textTransform:'uppercase'}}>Real-Time Analysis</span>
+          <span style={{fontSize:'.72rem',color:'#43C6B5',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase'}}>CKD risk assessment</span>
         </div>
-        <h1 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:800,letterSpacing:'-.035em',marginBottom:6,background:'linear-gradient(135deg,#E8EEFF 0%,#A97FFF 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
-          CKD Risk Assessment
+        <h1 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:700,letterSpacing:'-.035em',marginBottom:6,color:'#E8EEFF'}}>
+          Clinical risk assessment
         </h1>
-        <p style={{color:'#8BA0C8',fontSize:'.9rem',lineHeight:1.65}}>
-          Enter all patient clinical values below. Predictions use the <span style={{color:'#A97FFF',fontWeight:600}}>{modelInfo?.winner || 'Random Forest'}</span> model.
+        <p style={{color:'#A9B8C8',fontSize:'.9rem',lineHeight:1.65,maxWidth:720}}>
+          Enter patient and laboratory values to receive a research-model estimate from <strong style={{color:'#43C6B5',fontWeight:600}}>{modelInfo?.winner || 'XGBoost'}</strong>. At least five of the 13 clinical values are required. This tool is not a diagnosis.
         </p>
         <div style={{marginTop:'1rem'}}>
           <SignedIn>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.08)',border:'1px solid rgba(0,212,168,.25)',borderRadius:999,padding:'7px 12px',color:'#00D4A8',fontSize:'.75rem'}}>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.06)',border:'1px solid rgba(0,212,168,.2)',borderRadius:4,padding:'6px 9px',color:'#43C6B5',fontSize:'.75rem'}}>
               <span style={{width:7,height:7,borderRadius:'50%',background:'#00D4A8'}}/> Signed-in mode · linked to your account
             </div>
           </SignedIn>
           <SignedOut>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.08)',border:'1px solid rgba(245,166,35,.25)',borderRadius:999,padding:'7px 12px',color:'#F5A623',fontSize:'.75rem'}}>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.06)',border:'1px solid rgba(245,166,35,.2)',borderRadius:4,padding:'6px 9px',color:'#F5A623',fontSize:'.75rem'}}>
               <span style={{width:7,height:7,borderRadius:'50%',background:'#F5A623'}}/> Guest mode · one-time prediction, not stored
             </div>
           </SignedOut>
@@ -333,12 +333,12 @@ export default function Predict(){
 
 
 
-      <div style={{display:'grid',gridTemplateColumns:'1fr 268px',gap:'1.5rem',alignItems:'start'}}>
+      <div className="predict-layout">
 
         {/* ── LEFT: form ── */}
         <div>
           {/* Progress */}
-          <div style={{background:'linear-gradient(135deg,#10122A,#141730)',border:'1px solid #1E2247',borderRadius:12,padding:'1rem 1.4rem',marginBottom:'1.2rem',display:'flex',alignItems:'center',gap:'1rem'}}>
+          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem 1.2rem',marginBottom:'1.2rem',display:'flex',alignItems:'center',gap:'1rem'}}>
             <div style={{flex:1}}>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:7}}>
                 <span style={{fontSize:'.78rem',color:'#8BA0C8',fontWeight:500}}>Form completion</span>
@@ -352,7 +352,7 @@ export default function Predict(){
           {/* Grouped input sections */}
           <div style={{display:'grid',gap:'1.2rem',marginBottom:'1.2rem'}}>
             {SECTION_FIELDS.map((section)=>(
-              <div key={section.title} style={{background:'linear-gradient(160deg,#10122A 0%,#0C0E22 100%)',border:'1px solid #1E2247',borderRadius:16,padding:'1.4rem',boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
+              <div key={section.title} style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.25rem'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:'1rem'}}>
                   <div>
                     <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>
@@ -361,7 +361,7 @@ export default function Predict(){
                     <div style={{fontSize:'.72rem',color:'#8BA0C8',marginTop:4}}>{section.subtitle}</div>
                   </div>
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}}>
+                <div className="predict-field-grid">
                   {section.keys.map((key)=>{
                     const f = FIELDS.find(field => field.key === key);
                     if (!f) return null;
@@ -435,7 +435,7 @@ export default function Predict(){
                                   fontWeight:700,fontSize:'.85rem',fontFamily:'Space Grotesk,sans-serif',
                                   transition:'all .2s',
                                   background: selected===opt.val
-                                    ? 'linear-gradient(135deg,#5B7FFF,#A97FFF)'
+                                    ? '#176B72'
                                     : 'rgba(30,34,71,0.7)',
                                   color: selected===opt.val ? '#fff' : '#8BA0C8',
                                   boxShadow: selected===opt.val ? '0 4px 14px rgba(91,127,255,.35)' : 'none',
@@ -489,17 +489,17 @@ export default function Predict(){
           )}
 
           <div style={{display:'flex',gap:'1rem'}}>
-            <button onClick={submit} disabled={loading} style={{
-              flex:1,padding:'14px',borderRadius:12,border:'none',
+            <button className="predict-action" onClick={submit} disabled={loading} style={{
+              flex:1,padding:'12px',borderRadius:6,border:'1px solid #176B72',
               cursor:loading?'not-allowed':'pointer',
-              background:loading?'#10122A':'linear-gradient(135deg,#5B7FFF 0%,#A97FFF 100%)',
+              background:loading?'#172838':'#176B72',
               color:'#fff',fontFamily:'Space Grotesk,sans-serif',
               fontSize:'1rem',fontWeight:700,letterSpacing:'-.01em',
-              boxShadow:loading?'none':'0 8px 28px rgba(91,127,255,.38)',
-              transition:'all .2s',
+              boxShadow:'none',
+              transition:'background-color .2s',
             }}
-              onMouseOver={e=>{if(!loading){e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 16px 36px rgba(91,127,255,.52)';}}}
-              onMouseOut={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow=loading?'none':'0 8px 28px rgba(91,127,255,.38)';}}
+              onMouseOver={e=>{if(!loading)e.currentTarget.style.background='#1B7C82';}}
+              onMouseOut={e=>{e.currentTarget.style.background=loading?'#172838':'#176B72';}}
             >
               {loading?(
                 <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
@@ -508,16 +508,16 @@ export default function Predict(){
                 </span>
               ):`Run CKD Analysis →`}
             </button>
-            <button onClick={reset} style={{padding:'14px 24px',borderRadius:12,border:'1px solid #2A3060',background:'rgba(30,34,71,.5)',color:'#8BA0C8',fontSize:'1rem',cursor:'pointer',transition:'all .2s'}}
-              onMouseOver={e=>{e.currentTarget.style.color='#E8EEFF';e.currentTarget.style.borderColor='#5B7FFF';e.currentTarget.style.background='rgba(91,127,255,.1)';}}
-              onMouseOut={e=>{e.currentTarget.style.color='#8BA0C8';e.currentTarget.style.borderColor='#2A3060';e.currentTarget.style.background='rgba(30,34,71,.5)';}}
+            <button onClick={reset} style={{padding:'12px 18px',borderRadius:6,border:'1px solid #344758',background:'transparent',color:'#A9B8C8',fontSize:'.9rem',cursor:'pointer',transition:'all .2s'}}
+              onMouseOver={e=>{e.currentTarget.style.color='#E8EEFF';e.currentTarget.style.borderColor='#52697B';e.currentTarget.style.background='#142230';}}
+              onMouseOut={e=>{e.currentTarget.style.color='#A9B8C8';e.currentTarget.style.borderColor='#344758';e.currentTarget.style.background='transparent';}}
             >Reset</button>
           </div>
         </div>
 
         {/* ── RIGHT: radar + quick ref ── */}
-        <div style={{position:'sticky',top:80,display:'flex',flexDirection:'column',gap:'1rem'}}>
-          <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:16,padding:'1.4rem',textAlign:'center',boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
+        <div className="predict-sidebar" style={{position:'sticky',top:80,display:'flex',flexDirection:'column',gap:'1rem'}}>
+          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem',textAlign:'center'}}>
             <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Live Input Radar</div>
             <KidneyRadar values={form}/>
             <div style={{marginTop:'1rem',fontSize:'.74rem',color:'#4A5E80',lineHeight:1.6}}>Updates as you enter values</div>
@@ -530,12 +530,12 @@ export default function Predict(){
               {ALL_KEYS.filter(k=>form[k]!=='').length} / {ALL_KEYS.length} filled
             </div>
           </div>
-          <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1.2rem',boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
+          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem'}}>
             <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Quick Reference</div>
             {[
               {label:'GFR',       normal:'≥ 90',    color:'#00D4A8'},
               {label:'Creatinine',normal:'0.6–1.2', color:'#5B7FFF'},
-              {label:'BUN',       normal:'8–25',     color:'#A97FFF'},
+              {label:'BUN',       normal:'8–25',     color:'#5B7FFF'},
               {label:'Hemoglobin',normal:'12–17',    color:'#F5A623'},
               {label:'HbA1c',     normal:'< 5.7',    color:'#38BDF8'},
               {label:'Protein',   normal:'< 0.15',   color:'#FF4D6A'},
@@ -555,27 +555,26 @@ export default function Predict(){
 
           {/* Model used banner */}
           <div style={{
-            background:'linear-gradient(135deg,rgba(0,212,168,.07),rgba(91,127,255,.07))',
-            border:'1px solid rgba(0,212,168,.22)',
-            borderRadius:12,padding:'10px 16px',marginBottom:'1rem',
+            background:'#0D1824',
+            border:'1px solid #263949',
+            borderRadius:8,padding:'10px 14px',marginBottom:'1rem',
             display:'flex',alignItems:'center',gap:10,
             boxShadow:'0 4px 20px rgba(0,212,168,.06)',
           }}>
             <span style={{width:7,height:7,borderRadius:'50%',background:'#00D4A8',display:'inline-block',boxShadow:'0 0 8px #00D4A8'}}/>
             <span style={{fontSize:'.8rem',color:'#8BA0C8'}}>
-              Prediction by{' '}<span style={{color:'#A97FFF',fontWeight:700}}>{result.model_name || modelInfo?.winner || 'Random Forest'}</span>
-              {' '}(Best Model · F1-Score {(modelInfo?.models?.[modelInfo?.winner]?.['F1-Score'] ?? 0.6145) * 100}% · AUC {(modelInfo?.models?.[modelInfo?.winner]?.['AUC-ROC'] ?? 0.7468) * 100}%)
+              Prediction model: <span style={{color:'#43C6B5',fontWeight:700}}>{result.model_name || modelInfo?.winner || 'XGBoost'}</span>
             </span>
           </div>
 
           {(result.interpretation || result.risk_factors?.length || result.filled_defaults) && (
-            <div style={{background:'linear-gradient(135deg,rgba(91,127,255,.07),rgba(169,127,255,.07))',border:'1px solid rgba(91,127,255,.22)',borderRadius:14,padding:'1rem 1.2rem',marginBottom:'1rem',boxShadow:'0 4px 20px rgba(91,127,255,.06)'}}>
+            <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1rem 1.2rem',marginBottom:'1rem'}}>
               <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:8}}>Live interpretation</div>
               <div style={{color:'#E8EEFF',lineHeight:1.7,fontSize:'.9rem'}}>{result.interpretation}</div>
               {result.risk_factors?.length > 0 && (
                 <div style={{marginTop:10,display:'flex',flexWrap:'wrap',gap:8}}>
                   {result.risk_factors.map((factor, idx) => (
-                    <span key={idx} style={{background:'rgba(245,166,35,.1)',border:'1px solid rgba(245,166,35,.22)',color:'#F5A623',borderRadius:999,padding:'5px 11px',fontSize:'.72rem',fontWeight:500}}>
+                    <span key={idx} style={{background:'rgba(245,166,35,.08)',border:'1px solid rgba(245,166,35,.22)',color:'#F5A623',borderRadius:4,padding:'5px 8px',fontSize:'.72rem',fontWeight:500}}>
                       {factor}
                     </span>
                   ))}
@@ -586,10 +585,9 @@ export default function Predict(){
 
           {/* Pediatric banner */}
           {result.is_pediatric&&(
-            <div style={{background:'rgba(169,127,255,.09)',border:'1px solid rgba(169,127,255,.28)',borderRadius:12,padding:'12px 18px',marginBottom:'1rem',display:'flex',alignItems:'center',gap:12,boxShadow:'0 4px 20px rgba(169,127,255,.08)'}}>
-              <span style={{fontSize:'1.5rem'}}>👶</span>
+            <div style={{background:'#0D1824',border:'1px solid #365362',borderRadius:8,padding:'12px 16px',marginBottom:'1rem',display:'flex',alignItems:'center',gap:12}}>
               <div>
-                <div style={{color:'#A97FFF',fontWeight:700,fontSize:'.9rem',marginBottom:2}}>Pediatric Patient — Specialized Analysis Applied</div>
+                <div style={{color:'#43C6B5',fontWeight:700,fontSize:'.9rem',marginBottom:2}}>Pediatric patient</div>
                 <div style={{color:'#8BA0C8',fontSize:'.82rem'}}>{result.age_label} · Age-adjusted clinical reference ranges used throughout this report.</div>
               </div>
             </div>
@@ -600,16 +598,14 @@ export default function Predict(){
           {/* Verdict */}
           <div style={{
             background:result.prediction===1
-              ?'linear-gradient(160deg,rgba(255,77,106,.07) 0%,rgba(7,8,26,0) 60%)'
-              :'linear-gradient(160deg,rgba(0,212,168,.07) 0%,rgba(7,8,26,0) 60%)',
+              ?'rgba(255,77,106,.045)'
+              :'rgba(0,212,168,.045)',
             border:`1.5px solid ${result.prediction===1?'rgba(255,77,106,.28)':'rgba(0,212,168,.28)'}`,
-            borderRadius:24,padding:'2.4rem',textAlign:'center',
+            borderRadius:12,padding:'2rem',textAlign:'center',
             position:'relative',overflow:'hidden',
             boxShadow:result.prediction===1?'0 16px 48px rgba(255,77,106,.1)':'0 16px 48px rgba(0,212,168,.1)',
           }}>
-            <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:340,height:340,borderRadius:'50%',pointerEvents:'none',
-              background:result.prediction===1?'radial-gradient(circle,rgba(255,77,106,.07) 0%,transparent 68%)':'radial-gradient(circle,rgba(0,212,168,.07) 0%,transparent 68%)'}}/>
-            <div style={{fontSize:'3.5rem',marginBottom:'.6rem'}}>{result.prediction===1?'🔴':'🟢'}</div>
+            <div style={{width:10,height:10,borderRadius:'50%',background:result.prediction===1?'#FF4D6A':'#00D4A8',margin:'0 auto 1rem'}}/>
             <h2 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:800,marginBottom:4,letterSpacing:'-.03em',color:result.prediction===1?'#FF4D6A':'#00D4A8'}}>
               {result.label}
             </h2>
@@ -625,7 +621,7 @@ export default function Predict(){
               <div style={{background:'#07081A',borderRadius:999,height:10,overflow:'hidden',border:'1px solid #1E2247'}}>
                 <div style={{
                   height:'100%',borderRadius:999,
-                  background:result.prediction===1?'linear-gradient(90deg,#F5A623,#FF4D6A)':'linear-gradient(90deg,#00D4A8,#5B7FFF)',
+                  background:result.prediction===1?'#FF4D6A':'#00D4A8',
                   width:`${result.probability}%`,transition:'width 1.4s cubic-bezier(.4,0,.2,1)',
                   boxShadow:`0 0 18px ${result.prediction===1?'rgba(255,77,106,.45)':'rgba(0,212,168,.45)'}`,
                 }}/>
@@ -638,11 +634,11 @@ export default function Predict(){
           {/* Stats */}
           <div style={{display:'grid',gridTemplateColumns:result.ckd_stage?'repeat(3,1fr)':'repeat(2,1fr)',gap:'.65rem',marginBottom:result.prediction===1?'0':'1.2rem'}}>
             {[
-              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Model confidence score',color:'#5B7FFF'},
+              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Estimated probability',color:'#5B7FFF'},
               ...(result.ckd_stage?[{label:'ESTIMATED CKD STAGE',val:result.ckd_stage,sub:result.stage_desc,color:'#FF4D6A'}]:[]),
               {label:'RISK LEVEL',val:result.risk_level,sub:'Based on probability',color:result.risk_color},
             ].map((s,i)=>(
-              <div key={i} style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1rem .65rem',textAlign:'center',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
+              <div key={i} style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem .65rem',textAlign:'center'}}>
                 <div style={{fontSize:'.61rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{s.label}</div>
                 <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.3rem',fontWeight:800,color:s.color,marginBottom:4}}>{s.val}</div>
                 <div style={{color:'#8BA0C8',fontSize:'.68rem',lineHeight:1.4}}>{s.sub}</div>
@@ -652,7 +648,7 @@ export default function Predict(){
 
           {/* Stage scale */}
           {result.prediction===1&&(
-            <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1rem',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
+            <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem'}}>
               <div style={{fontSize:'.65rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'.75rem'}}>
                 CKD Stage Scale · GFR-Based (KDIGO Guidelines)
               </div>
@@ -679,16 +675,16 @@ export default function Predict(){
           </div>
 
           {/* What-if simulator */}
-          <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid rgba(169,127,255,.25)',borderRadius:16,padding:'1.5rem',marginBottom:'1.2rem',boxShadow:'0 8px 32px rgba(169,127,255,.08)'}}>
+          <div style={{background:'#0D1824',border:'1px solid #365362',borderRadius:10,padding:'1.5rem',marginBottom:'1.2rem'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:16,flexWrap:'wrap',marginBottom:'1.2rem'}}>
               <div>
-                <div style={{fontSize:'.68rem',color:'#A97FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:6}}>What-If Simulator</div>
-                <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.15rem',color:'#E8EEFF',marginBottom:5}}>Explore a different clinical profile</h3>
+                <div style={{fontSize:'.68rem',color:'#43C6B5',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:6}}>Scenario analysis</div>
+                <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.15rem',color:'#E8EEFF',marginBottom:5}}>Test changes to selected values</h3>
                 <p style={{color:'#8BA0C8',fontSize:'.8rem',lineHeight:1.6,maxWidth:590}}>
                   Adjust selected values to see how the prediction model responds. This creates a temporary scenario and does not change the original report.
                 </p>
               </div>
-              <span style={{fontSize:'.7rem',color:'#A97FFF',background:'rgba(169,127,255,.12)',border:'1px solid rgba(169,127,255,.25)',borderRadius:999,padding:'5px 11px',whiteSpace:'nowrap',fontWeight:600}}>Model exploration</span>
+              <span style={{fontSize:'.7rem',color:'#43C6B5',borderLeft:'2px solid #43C6B5',paddingLeft:8,whiteSpace:'nowrap',fontWeight:600}}>Temporary scenario</span>
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem 1.5rem'}}>
@@ -707,7 +703,7 @@ export default function Predict(){
                       step={field.step}
                       value={value}
                       onChange={e=>setSimValues(previous=>({...previous,[field.key]:Number(e.target.value)}))}
-                      style={{width:'100%',accentColor:'#A97FFF',cursor:'pointer'}}
+                      style={{width:'100%',accentColor:'#43C6B5',cursor:'pointer'}}
                     />
                   </label>
                 );
@@ -715,7 +711,7 @@ export default function Predict(){
             </div>
 
             <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',marginTop:'1.4rem'}}>
-              <button onClick={runSimulation} disabled={simLoading} style={{padding:'11px 20px',border:'none',borderRadius:10,background:simLoading?'#1E2247':'linear-gradient(135deg,#A97FFF,#5B7FFF)',color:'#fff',fontWeight:700,fontSize:'.85rem',cursor:simLoading?'not-allowed':'pointer',boxShadow:simLoading?'none':'0 8px 24px rgba(169,127,255,.3)',transition:'all .2s'}}>
+              <button onClick={runSimulation} disabled={simLoading} style={{padding:'11px 16px',border:'1px solid #176B72',borderRadius:6,background:simLoading?'#172838':'#176B72',color:'#F4FBFB',fontWeight:600,fontSize:'.85rem',cursor:simLoading?'not-allowed':'pointer',transition:'background-color .2s'}}>
                 {simLoading?'Running scenario...':'Run Scenario →'}
               </button>
               <span style={{color:'#4A5E80',fontSize:'.72rem'}}>Original report: {result.probability}% risk</span>
@@ -728,7 +724,7 @@ export default function Predict(){
                 <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.75rem'}}>
                   {[
                     {label:'Original risk',value:`${result.probability}%`,color:'#8BA0C8'},
-                    {label:'Scenario risk',value:`${simResult.probability}%`,color:simResult.risk_color||'#A97FFF'},
+                    {label:'Scenario risk',value:`${simResult.probability}%`,color:simResult.risk_color||'#43C6B5'},
                     {label:'Change',value:`${simResult.probability-result.probability>0?'+':''}${(simResult.probability-result.probability).toFixed(1)} pts`,color:simResult.probability>result.probability?'#FF4D6A':'#00D4A8'},
                   ].map((item)=>(
                     <div key={item.label} style={{background:'rgba(7,8,26,.7)',border:'1px solid #1E2247',borderRadius:10,padding:'11px',textAlign:'center'}}>
@@ -747,7 +743,7 @@ export default function Predict(){
 
           {/* Early warnings */}
           {result.early_warnings?.length>0&&(
-            <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid rgba(245,166,35,.2)',borderRadius:14,padding:'1.4rem',marginBottom:'1.2rem',boxShadow:'0 8px 24px rgba(245,166,35,.05)'}}>
+            <div style={{background:'#0D1824',border:'1px solid rgba(245,166,35,.22)',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
               <div style={{fontSize:'.68rem',color:'#F5A623',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>🚦 Early Detection Alerts</div>
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
                 {result.early_warnings.map((w,i)=>{
@@ -764,10 +760,10 @@ export default function Predict(){
           )}
 
           {/* Recommendations */}
-          <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1.4rem',marginBottom:'1.2rem',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
+          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'1rem'}}>
               <span style={{fontSize:'.68rem',color:'#8BA0C8',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>💡 Health Recommendations</span>
-              {result.is_pediatric&&<span style={{fontSize:'.68rem',background:'rgba(169,127,255,.12)',color:'#A97FFF',padding:'2px 10px',borderRadius:999,border:'1px solid rgba(169,127,255,.25)',fontWeight:600}}>Pediatric</span>}
+              {result.is_pediatric&&<span style={{fontSize:'.68rem',background:'rgba(67,198,181,.08)',color:'#43C6B5',padding:'3px 7px',borderRadius:4,border:'1px solid rgba(67,198,181,.2)',fontWeight:600}}>Pediatric</span>}
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {result.recommendations.map((r,i)=>{
@@ -787,14 +783,14 @@ export default function Predict(){
 
           <div style={{display:'flex',justifyContent:'center',marginBottom:'1rem'}}>
             <button onClick={downloadReport} style={{
-              background:'linear-gradient(135deg,#5B7FFF 0%,#A97FFF 100%)',
-              border:'none',borderRadius:12,padding:'13px 28px',
+              background:'#176B72',
+              border:'1px solid #176B72',borderRadius:6,padding:'12px 20px',
               color:'#fff',fontWeight:700,fontSize:'.95rem',cursor:'pointer',
-              boxShadow:'0 10px 28px rgba(91,127,255,.35)',
-              transition:'all .2s',
+              boxShadow:'none',
+              transition:'background-color .2s',
             }}
-              onMouseOver={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 16px 36px rgba(91,127,255,.5)';}}
-              onMouseOut={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 10px 28px rgba(91,127,255,.35)';}}
+              onMouseOver={e=>{e.currentTarget.style.background='#1B7C82';}}
+              onMouseOut={e=>{e.currentTarget.style.background='#176B72';}}
             >
               ⬇ Download PDF Report
             </button>
@@ -805,6 +801,6 @@ export default function Predict(){
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
