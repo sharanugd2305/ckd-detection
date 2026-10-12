@@ -595,13 +595,15 @@ export default function Predict(){
             </div>
           )}
 
+          <div className="result-overview">
+          <div className="result-verdict">
           {/* Verdict */}
           <div style={{
             background:result.prediction===1
               ?'linear-gradient(160deg,rgba(255,77,106,.07) 0%,rgba(7,8,26,0) 60%)'
               :'linear-gradient(160deg,rgba(0,212,168,.07) 0%,rgba(7,8,26,0) 60%)',
             border:`1.5px solid ${result.prediction===1?'rgba(255,77,106,.28)':'rgba(0,212,168,.28)'}`,
-            borderRadius:24,padding:'2.4rem',textAlign:'center',marginBottom:'1.2rem',
+            borderRadius:24,padding:'2.4rem',textAlign:'center',
             position:'relative',overflow:'hidden',
             boxShadow:result.prediction===1?'0 16px 48px rgba(255,77,106,.1)':'0 16px 48px rgba(0,212,168,.1)',
           }}>
@@ -629,6 +631,51 @@ export default function Predict(){
                 }}/>
               </div>
             </div>
+          </div>
+          </div>
+
+          <div className="result-details">
+          {/* Stats */}
+          <div style={{display:'grid',gridTemplateColumns:result.ckd_stage?'repeat(3,1fr)':'repeat(2,1fr)',gap:'.65rem',marginBottom:result.prediction===1?'0':'1.2rem'}}>
+            {[
+              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Model confidence score',color:'#5B7FFF'},
+              ...(result.ckd_stage?[{label:'ESTIMATED CKD STAGE',val:result.ckd_stage,sub:result.stage_desc,color:'#FF4D6A'}]:[]),
+              {label:'RISK LEVEL',val:result.risk_level,sub:'Based on probability',color:result.risk_color},
+            ].map((s,i)=>(
+              <div key={i} style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1rem .65rem',textAlign:'center',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
+                <div style={{fontSize:'.61rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{s.label}</div>
+                <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.3rem',fontWeight:800,color:s.color,marginBottom:4}}>{s.val}</div>
+                <div style={{color:'#8BA0C8',fontSize:'.68rem',lineHeight:1.4}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stage scale */}
+          {result.prediction===1&&(
+            <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1rem',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
+              <div style={{fontSize:'.65rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'.75rem'}}>
+                CKD Stage Scale · GFR-Based (KDIGO Guidelines)
+              </div>
+              <div style={{display:'flex',gap:5}}>
+                {[
+                  {label:'Stage 1–2',range:'GFR ≥ 60', color:'#00D4A8'},
+                  {label:'Stage 3a', range:'GFR 45–59',color:'#F5A623'},
+                  {label:'Stage 3b', range:'GFR 30–44',color:'#F97316'},
+                  {label:'Stage 4',  range:'GFR 15–29',color:'#EF4444'},
+                  {label:'Stage 5',  range:'GFR < 15', color:'#FF4D6A'},
+                ].map((s,i)=>{
+                  const active = normalizeStageName(result.ckd_stage) === normalizeStageName(s.label);
+                  return(
+                    <div key={i} style={{flex:1,minWidth:0,borderRadius:9,padding:'9px 3px',textAlign:'center',background:active?s.color:'rgba(255,255,255,.02)',border:`1px solid ${active?s.color:'#1E2247'}`,transition:'all .35s ease',boxShadow:active?`0 6px 20px ${s.color}50`:'none'}}>
+                      <div style={{fontWeight:700,fontSize:'.66rem',color:active?'#fff':s.color}}>{s.label}</div>
+                      <div style={{fontSize:'.58rem',marginTop:3,color:active?'rgba(255,255,255,.75)':'#4A5E80'}}>{s.range}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          </div>
           </div>
 
           {/* What-if simulator */}
@@ -697,47 +744,6 @@ export default function Predict(){
               </div>
             )}
           </div>
-
-          {/* Stats */}
-          <div style={{display:'grid',gridTemplateColumns:result.ckd_stage?'repeat(3,1fr)':'repeat(2,1fr)',gap:'1rem',marginBottom:'1.2rem'}}>
-            {[
-              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Model confidence score',color:'#5B7FFF'},
-              ...(result.ckd_stage?[{label:'ESTIMATED CKD STAGE',val:result.ckd_stage,sub:result.stage_desc,color:'#FF4D6A'}]:[]),
-              {label:'RISK LEVEL',val:result.risk_level,sub:'Based on probability',color:result.risk_color},
-            ].map((s,i)=>(
-              <div key={i} style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1.4rem',textAlign:'center',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
-                <div style={{fontSize:'.66rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:8}}>{s.label}</div>
-                <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.65rem',fontWeight:800,color:s.color,marginBottom:4}}>{s.val}</div>
-                <div style={{color:'#8BA0C8',fontSize:'.75rem'}}>{s.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Stage scale */}
-          {result.prediction===1&&(
-            <div style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid #1E2247',borderRadius:14,padding:'1.4rem',marginBottom:'1.2rem',boxShadow:'0 8px 24px rgba(0,0,0,0.3)'}}>
-              <div style={{fontSize:'.68rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:'1rem'}}>
-                CKD Stage Scale · GFR-Based (KDIGO Guidelines)
-              </div>
-              <div style={{display:'flex',gap:6}}>
-                {[
-                  {label:'Stage 1–2',range:'GFR ≥ 60', color:'#00D4A8'},
-                  {label:'Stage 3a', range:'GFR 45–59',color:'#F5A623'},
-                  {label:'Stage 3b', range:'GFR 30–44',color:'#F97316'},
-                  {label:'Stage 4',  range:'GFR 15–29',color:'#EF4444'},
-                  {label:'Stage 5',  range:'GFR < 15', color:'#FF4D6A'},
-                ].map((s,i)=>{
-                  const active = normalizeStageName(result.ckd_stage) === normalizeStageName(s.label);
-                  return(
-                    <div key={i} style={{flex:1,borderRadius:10,padding:'10px 6px',textAlign:'center',background:active?s.color:'rgba(255,255,255,.02)',border:`1px solid ${active?s.color:'#1E2247'}`,transition:'all .35s ease',boxShadow:active?`0 6px 20px ${s.color}50`:'none'}}>
-                      <div style={{fontWeight:700,fontSize:'.78rem',color:active?'#fff':s.color}}>{s.label}</div>
-                      <div style={{fontSize:'.65rem',marginTop:3,color:active?'rgba(255,255,255,.75)':'#4A5E80'}}>{s.range}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Early warnings */}
           {result.early_warnings?.length>0&&(
