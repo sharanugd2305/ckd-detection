@@ -103,6 +103,44 @@ function Bar({pct,color='#5B7FFF'}){
   );
 }
 
+function FeatureImportance({features}){
+  const validFeatures=Array.isArray(features)
+    ?features.filter(item=>item&&typeof item.feature==='string'&&Number.isFinite(item.importance))
+    :[];
+  const maxImportance=Math.max(...validFeatures.map(item=>item.importance),0);
+
+  return(
+    <section aria-label="Model feature importance" style={{background:'linear-gradient(160deg,#10122A,#0C0E22)',border:'1px solid rgba(169,127,255,.25)',borderRadius:16,padding:'1.4rem',boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
+      <div style={{fontSize:'.68rem',color:'#A97FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:6}}>Feature Importance</div>
+      <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.1rem',color:'#E8EEFF',marginBottom:6}}>Factors influencing the model</h3>
+      <p style={{color:'#8BA0C8',fontSize:'.75rem',lineHeight:1.5,marginBottom:'1.2rem'}}>
+        Global model importance, normalized across all 13 inputs. This does not show patient-specific risk direction.
+      </p>
+      {validFeatures.length>0?(
+        <div style={{display:'grid',gap:12}}>
+          {validFeatures.map((item,index)=>{
+            const field=FIELDS.find(candidate=>candidate.key===item.feature);
+            const barWidth=maxImportance>0?(item.importance/maxImportance)*100:0;
+            return(
+              <div key={item.feature} aria-label={`${field?.label||item.feature}: ${item.importance.toFixed(1)} percent importance`}>
+                <div style={{display:'flex',justifyContent:'space-between',gap:10,marginBottom:5}}>
+                  <span style={{fontSize:'.76rem',color:'#C7D2F2'}}>{field?.label||item.feature}</span>
+                  <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.7rem',color:'#A97FFF',whiteSpace:'nowrap'}}>{item.importance.toFixed(1)}%</span>
+                </div>
+                <div style={{background:'#07081A',borderRadius:999,height:7,overflow:'hidden',border:'1px solid #1E2247'}}>
+                  <div style={{height:'100%',width:`${barWidth}%`,borderRadius:999,background:index===0?'linear-gradient(90deg,#A97FFF,#5B7FFF)':'linear-gradient(90deg,rgba(169,127,255,.75),rgba(91,127,255,.75))',transition:'width .6s ease'}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ):(
+        <div role="status" style={{color:'#F5A623',fontSize:'.8rem'}}>Feature importance is unavailable for this prediction.</div>
+      )}
+    </section>
+  );
+}
+
 export default function Predict(){
   const MIN_REQUIRED_FIELDS=5;
   const {getToken,isSignedIn}=useAuth();
@@ -565,13 +603,14 @@ export default function Predict(){
             </div>
           )}
 
+          <div className="result-overview">
           {/* Verdict */}
           <div style={{
             background:result.prediction===1
               ?'linear-gradient(160deg,rgba(255,77,106,.07) 0%,rgba(7,8,26,0) 60%)'
               :'linear-gradient(160deg,rgba(0,212,168,.07) 0%,rgba(7,8,26,0) 60%)',
             border:`1.5px solid ${result.prediction===1?'rgba(255,77,106,.28)':'rgba(0,212,168,.28)'}`,
-            borderRadius:24,padding:'2.4rem',textAlign:'center',marginBottom:'1.2rem',
+            borderRadius:24,padding:'2.4rem',textAlign:'center',
             position:'relative',overflow:'hidden',
             boxShadow:result.prediction===1?'0 16px 48px rgba(255,77,106,.1)':'0 16px 48px rgba(0,212,168,.1)',
           }}>
@@ -599,6 +638,8 @@ export default function Predict(){
                 }}/>
               </div>
             </div>
+          </div>
+          <FeatureImportance features={result.feature_importance}/>
           </div>
 
           {/* What-if simulator */}
