@@ -1,7 +1,7 @@
 import React,{useState,useMemo,useEffect} from 'react';
 import axios from 'axios';
 import {SignedIn,SignedOut,useAuth} from '@clerk/clerk-react';
-import { jsPDF } from 'jspdf';
+import { downloadAssessmentReport } from '../utils/assessmentReport';
 
 const FIELDS=[
   {key:'Age',                        label:'Age',                           unit:'years',  min:0,  max:120,step:1,   normal:'Any age',         desc:'Age-adjusted thresholds applied automatically'},
@@ -232,66 +232,23 @@ export default function Predict(){
   const downloadReport = () => {
     if (!result) return;
 
-    const doc = new jsPDF();
-    const dateText = new Date().toLocaleString();
     const patientName = form.Age ? `Patient (Age ${form.Age})` : 'Patient';
-
-    doc.setFillColor(18, 23, 36);
-    doc.rect(0, 0, 210, 28, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text('CKD Risk Assessment Report', 14, 18);
-
-    doc.setTextColor(40, 60, 80);
-    doc.setFontSize(10);
-    doc.text(`Generated: ${dateText}`, 14, 36);
-    doc.text(`Report for: ${patientName}`, 14, 42);
-
-    let y = 58;
-    const addSection = (title, lines) => {
-      doc.setFontSize(12);
-      doc.setTextColor(45, 106, 255);
-      doc.text(title, 14, y);
-      y += 8;
-
-      doc.setFontSize(10);
-      doc.setTextColor(40, 60, 80);
-      const wrapped = doc.splitTextToSize(lines.join('\n'), 180);
-      doc.text(wrapped, 14, y);
-      y += wrapped.length * 7 + 8;
-    };
-
-    const summaryLines = [
-      `Prediction: ${result.label}`,
-      `Probability: ${result.probability}%`,
-      `Risk Level: ${result.risk_level}`,
-      `Age Group: ${result.age_label || 'Not available'}`,
-      result.ckd_stage ? `CKD Stage: ${result.ckd_stage} (${result.stage_desc})` : 'CKD Stage: Not available',
-      `Model: ${result.model_name || modelInfo?.winner || 'Random Forest'}`,
-    ];
-
-    addSection('Overview', summaryLines);
-
-    const interpretationText = result.interpretation || 'No interpretation available.';
-    addSection('Clinical Interpretation', [interpretationText]);
-
-    const riskFactorLines = result.risk_factors && result.risk_factors.length
-      ? result.risk_factors
-      : ['No major risk factors were identified.'];
-    addSection('Key Risk Factors', riskFactorLines.map((factor) => `• ${factor}`));
-
-    const warningLines = result.early_warnings && result.early_warnings.length
-      ? result.early_warnings.map((warning) => `• ${warning.msg}`)
-      : ['No early warnings recorded.'];
-    addSection('Early Detection Alerts', warningLines);
-
-    const recommendationLines = result.recommendations && result.recommendations.length
-      ? result.recommendations.map((item) => `• ${item.title}: ${item.desc}`)
-      : ['No recommendations available.'];
-    addSection('Recommendations', recommendationLines);
-
-    const fileName = result.prediction === 1 ? 'ckd-risk-report.pdf' : 'ckd-low-risk-report.pdf';
-    doc.save(fileName);
+    downloadAssessmentReport({
+      fileName: result.prediction === 1 ? 'ckd-risk-report.pdf' : 'ckd-low-risk-report.pdf',
+      patientName,
+      label: result.label,
+      probability: result.probability,
+      riskLevel: result.risk_level,
+      stage: result.ckd_stage
+        ? `${result.ckd_stage}${result.stage_desc ? ` - ${result.stage_desc}` : ''}`
+        : 'Not available',
+      modelName: result.model_name || modelInfo?.winner,
+      interpretation: result.interpretation,
+      riskFactors: result.risk_factors || [],
+      warnings: (result.early_warnings || []).map((warning) => warning.msg || warning),
+      recommendations: (result.recommendations || []).map((item) => `${item.title}: ${item.desc}`),
+      inputs: form,
+    });
   };
 
   const iStyle={
