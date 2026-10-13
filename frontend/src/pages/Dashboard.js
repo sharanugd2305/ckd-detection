@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { jsPDF } from 'jspdf';
 import { Link, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-react';
+import { downloadAssessmentReport } from '../utils/assessmentReport';
 
 const API_URL = 'http://localhost:5000';
 const FIELD_LABELS = {
@@ -80,13 +80,6 @@ function formatDate(value) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
-function getThemeRgb(variable) {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-  const match = value.match(/^#([0-9a-f]{6})$/i);
-  if (!match) throw new Error(`Theme variable ${variable} must contain a six-digit hex color.`);
-  return [0, 2, 4].map((offset) => Number.parseInt(match[1].slice(offset, offset + 2), 16));
-}
-
 function ResultDetails({ record }) {
   const details = record.result_details || {};
   const inputs = record.inputs || {};
@@ -148,68 +141,23 @@ function ResultDetails({ record }) {
 
 function downloadRecordPdf(record) {
   const details = record.result_details || {};
-  const inputs = record.inputs || {};
   const warnings = details.early_warnings || [];
   const recommendations = details.recommendations || [];
-  const doc = new jsPDF();
-  const generatedAt = new Date(record.created_at || Date.now()).toLocaleString();
-
-  doc.setFillColor(...getThemeRgb('--bg'));
-  doc.rect(0, 0, 210, 28, 'F');
-  doc.setTextColor(...getThemeRgb('--text'));
-  doc.setFontSize(18);
-  doc.text('CKD Risk Assessment Report', 14, 18);
-
-  doc.setTextColor(...getThemeRgb('--surface-text'));
-  doc.setFontSize(10);
-  doc.text(`Generated: ${generatedAt}`, 14, 36);
-  doc.text(`Assessment: ${record.label}`, 14, 42);
-
-  let y = 56;
-  const addSection = (title, lines) => {
-    if (y > 250) {
-      doc.addPage();
-      y = 18;
-    }
-
-    doc.setFontSize(12);
-    doc.setTextColor(...getThemeRgb('--paper-accent'));
-    doc.text(title, 14, y);
-    y += 8;
-
-    doc.setFontSize(10);
-    doc.setTextColor(...getThemeRgb('--surface-text'));
-    const wrapped = doc.splitTextToSize(lines.join('\n'), 180);
-    doc.text(wrapped, 14, y);
-    y += wrapped.length * 7 + 8;
-  };
-
-  addSection('Overview', [
-    `Prediction: ${record.label}`,
-    `Probability: ${record.probability}%`,
-    `Risk Level: ${record.risk_level}`,
-    `CKD Stage: ${record.ckd_stage || details.stage_desc || 'Not available'}`,
-    `Model: ${details.model_name || 'Stored result'}`,
-  ]);
-
-  addSection('Clinical Interpretation', [details.interpretation || 'No interpretation available.']);
-
-  const riskFactors = details.risk_factors && details.risk_factors.length
-    ? details.risk_factors
-    : ['No major risk factors were identified.'];
-  addSection('Key Risk Factors', riskFactors.map(item => `• ${item}`));
-
-  addSection('Clinical Inputs', Object.entries(inputs).map(([key, value]) => `• ${FIELD_LABELS[key] || key}: ${value ?? 'Not provided'}`));
-
-  const warningLines = warnings.length ? warnings.map(item => `• ${item.msg}`) : ['No early warnings recorded.'];
-  addSection('Early Detection Alerts', warningLines);
-
-  const recommendationLines = recommendations.length
-    ? recommendations.map(item => `• ${item.title}: ${item.desc}`)
-    : ['No recommendations available.'];
-  addSection('Recommendations', recommendationLines);
-
-  doc.save(`ckd-report-${record.id || 'history'}.pdf`);
+  downloadAssessmentReport({
+    fileName: `ckd-report-${record.id || 'history'}.pdf`,
+    reportDate: record.created_at,
+    patientName: 'Assessment record',
+    label: record.label,
+    probability: record.probability,
+    riskLevel: record.risk_level,
+    stage: record.ckd_stage || details.stage_desc,
+    modelName: details.model_name || 'Stored result',
+    interpretation: details.interpretation,
+    riskFactors: details.risk_factors || [],
+    warnings: warnings.map((item) => item.msg || item),
+    recommendations: recommendations.map((item) => `${item.title}: ${item.desc}`),
+    inputs: record.inputs || {},
+  });
 }
 
 function DashboardContent() {
