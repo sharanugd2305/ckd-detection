@@ -33,12 +33,9 @@ X_train_raw, X_test_raw, y_train, y_test = train_test_split(
     X, y, test_size=0.3,
     random_state=42, stratify=y)
 
-# Scale using TRAINING-ONLY fit statistics
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train_raw)
-X_test = scaler.transform(X_test_raw)
-
-# SMOTENC only on training data to preserve the binary/categorical columns
+# Apply SMOTENC to TRAINING data only, before scaling, so the categorical
+# binary columns stay as true 0/1 category values instead of being treated as
+# continuous feature magnitudes.
 categorical_idx = [
     FEATURES.index('UrinaryTractInfections'),
     FEATURES.index('FamilyHistoryKidneyDisease'),
@@ -51,7 +48,12 @@ smote = SMOTENC(
     k_neighbors=5,
     random_state=42,
 )
-X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
+X_train_sm, y_train_sm = smote.fit_resample(X_train_raw, y_train)
+
+# Scale using TRAINING-ONLY fit statistics, after resampling.
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train_sm)
+X_test = scaler.transform(X_test_raw)
 
 # SMOTE already balanced the classes to 1:1 — no need for scale_pos_weight.
 # Using both would double-boost the positive class and produce overconfident
@@ -98,7 +100,7 @@ def compute_metrics(y_true, y_pred, y_prob):
 
 summary = {}
 for name, model in MODEL_MAP.items():
-    model.fit(X_train_sm, y_train_sm)
+    model.fit(X_train, y_train_sm)
     pred = model.predict(X_test)
     proba = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else pred
     summary[name] = compute_metrics(y_test, pred, proba)
@@ -117,7 +119,7 @@ calibrated_xgb = CalibratedClassifierCV(
     method='isotonic',
     cv=5,
 )
-calibrated_xgb.fit(X_train_sm, y_train_sm)
+calibrated_xgb.fit(X_train, y_train_sm)
 
 os.makedirs('model', exist_ok=True)
 joblib.dump(scaler, 'model/scaler.pkl')
