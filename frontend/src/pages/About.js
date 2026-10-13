@@ -45,8 +45,9 @@ function ModelRow({name,desc}){
 export default function About(){
   const features=[
     'Age','BMI','HbA1c','Serum Creatinine','BUN Levels','GFR (eGFR)',
-    'Hemoglobin','Total Cholesterol','Protein in Urine',
+    'Hemoglobin','Systolic Blood Pressure','Protein in Urine',
     'Urinary Tract Infections','Family History of Kidney Disease',
+    'Gender','Smoking',
   ];
 
   const pipeline=[
@@ -73,7 +74,7 @@ export default function About(){
       {/* Overview */}
       <Section title="🎯 Project Overview" accent="#2D6AFF">
         <p style={{color:'#7A92BC',fontSize:'.88rem',lineHeight:1.75}}>
-          Chronic Kidney Disease (CKD) is a major health concern across adulthood and older age, and it is often under-recognized until significant kidney damage has occurred. NephroScan addresses this by providing an AI-powered early detection system that accepts routine clinical values and delivers instant risk classification, CKD stage estimation, and age-aware health guidance.
+          NephroScan is a CKD prediction application built around 13 clinical and demographic inputs. The data is split into stratified training and test sets, scaled using training-set statistics, and balanced on the training set with SMOTENC. Four classifiers are compared, and an isotonic-calibrated XGBoost model powers predictions of “CKD Detected” or “No CKD Detected.”
         </p>
         <p style={{color:'#7A92BC',fontSize:'.88rem',lineHeight:1.75,marginTop:'1rem'}}>
           The current project is trained on adult CKD data spanning ages 20-90, so the app groups patients into adult and senior ranges rather than pediatric categories such as infant or child.
@@ -81,7 +82,7 @@ export default function About(){
       </Section>
 
       {/* Features */}
-      <Section title="🧬 Selected Clinical Features (11)" accent="#00E5B4">
+      <Section title="🧬 Clinical and Demographic Features (13)" accent="#00E5B4">
         <div>{features.map((f,i)=><Tag key={i} label={f} color="#00E5B4"/>)}</div>
         <p style={{color:'#7A92BC',fontSize:'.82rem',marginTop:'1rem',lineHeight:1.6}}>
           Features were selected based on clinical significance, availability in routine lab tests, coverage across the training dataset, and leakage-safe model comparison logic. All features are numeric at inference time after the same train-only preprocessing pipeline is applied.
