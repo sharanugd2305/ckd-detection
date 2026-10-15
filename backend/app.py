@@ -418,21 +418,26 @@ def get_normal_ranges(age):
              'gfr': (90, 120), 'hemoglobin': (12, 17) }
 
 # ── CKD Stage from GFR ────────────────────────────────────────────────────────
-def get_ckd_stage(gfr, age):
-    if age < 20:
-        if gfr >= 90: return None, "Normal or High"
-        elif gfr >= 60: return "Stage 1-2", "Mildly Decreased"
-        elif gfr >= 45: return "Stage 3a", "Mildly to Moderately Decreased"
-        elif gfr >= 30: return "Stage 3b", "Moderately to Severely Decreased"
-        elif gfr >= 15: return "Stage 4", "Severely Decreased"
-        else: return "Stage 5", "Kidney Failure (End Stage)"
-    else:
-        if gfr >= 90: return None, "Normal or High"
-        elif gfr >= 60: return "Stage 1-2", "Mildly Decreased"
-        elif gfr >= 45: return "Stage 3a", "Mildly to Moderately Decreased"
-        elif gfr >= 30: return "Stage 3b", "Moderately to Severely Decreased"
-        elif gfr >= 15: return "Stage 4", "Severely Decreased"
-        else: return "Stage 5", "Kidney Failure (End Stage)"
+def get_ckd_stage(gfr, ckd_detected=False, kidney_damage_evidence=False):
+    if gfr >= 90:
+        if ckd_detected and kidney_damage_evidence:
+            return "Stage 1", "Normal or high GFR; elevated urine protein suggests kidney damage, but persistence should be confirmed."
+        if ckd_detected:
+            return None, "Normal or high GFR; early CKD staging requires evidence of kidney damage, such as persistent urine protein."
+        return None, "Normal or High"
+    if gfr >= 60:
+        if ckd_detected and kidney_damage_evidence:
+            return "Stage 2", "Mildly decreased GFR; elevated urine protein suggests kidney damage, but persistence should be confirmed."
+        if ckd_detected:
+            return None, "Mildly decreased GFR; early CKD staging requires evidence of kidney damage, such as persistent urine protein."
+        return None, "Mildly Decreased"
+    if gfr >= 45:
+        return "Stage 3a", "Mildly to Moderately Decreased"
+    if gfr >= 30:
+        return "Stage 3b", "Moderately to Severely Decreased"
+    if gfr >= 15:
+        return "Stage 4", "Severely Decreased"
+    return "Stage 5", "Kidney Failure (End Stage)"
 
 # ── Early Warning Flags ───────────────────────────────────────────────────────
 def get_early_warnings(data, age_group, age, norms):
@@ -579,7 +584,9 @@ def predict():
 
     age_group, age_label       = get_age_group(age)
     norms                      = get_normal_ranges(age)
-    stage, stage_desc          = get_ckd_stage(gfr, age)
+    protein_in_urine = float(data.get('ProteinInUrine', FEATURE_MEDIANS.get('ProteinInUrine', 0.15)))
+    has_proteinuria = 'ProteinInUrine' in provided_features and protein_in_urine > 0.15
+    stage, stage_desc          = get_ckd_stage(gfr, pred == 1, has_proteinuria)
     risk_level, risk_color     = get_risk_level(prob)
     early_warnings             = get_early_warnings(data, age_group, age, norms)
     recommendations            = get_recommendations(data, pred, age_group, age, norms)
