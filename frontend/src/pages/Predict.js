@@ -607,11 +607,12 @@ export default function Predict(){
           {result.prediction===1&&(
             <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem'}}>
               <div style={{fontSize:'.65rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'.75rem'}}>
-                CKD Stage Scale · GFR-Based (KDIGO Guidelines)
+                CKD Stage Scale · GFR-Based
               </div>
               <div style={{display:'flex',gap:5}}>
                 {[
-                  {label:'Stage 1–2',range:'GFR ≥ 60', color:'#00D4A8'},
+                  {label:'Stage 1',  range:'GFR ≥ 90', color:'#00D4A8'},
+                  {label:'Stage 2',  range:'GFR 60–89',color:'#40CDA3'},
                   {label:'Stage 3a', range:'GFR 45–59',color:'#F5A623'},
                   {label:'Stage 3b', range:'GFR 30–44',color:'#F97316'},
                   {label:'Stage 4',  range:'GFR 15–29',color:'#EF4444'},
@@ -626,6 +627,9 @@ export default function Predict(){
                   );
                 })}
               </div>
+              {result.prediction===1&&!result.ckd_stage&&(
+                <div style={{marginTop:'.75rem',color:'#8BA0C8',fontSize:'.75rem',lineHeight:1.5}}>{result.stage_desc}</div>
+              )}
             </div>
           )}
           </div>
