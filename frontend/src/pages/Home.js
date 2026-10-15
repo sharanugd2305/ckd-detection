@@ -71,7 +71,7 @@ export default function Home() {
   const features = [
     { icon: '🧬', title: 'Age-Aware Thresholds', body: 'Clinical reference ranges are tuned to the project dataset age span of 20–90 years, covering young adults through seniors.', accent: '#2D6AFF', delay: 0 },
     { icon: '⚡', title: 'Instant Risk Scoring', body: 'Trained ML models deliver a precise CKD probability score with confidence metrics in under a second.', accent: '#00E5B4', delay: 80 },
-    { icon: '📊', title: 'CKD Stage Estimation', body: 'GFR-based staging maps every result to Stage 1–5 following KDIGO international clinical guidelines.', accent: '#9B6DFF', delay: 160 },
+    { icon: '📊', title: 'CKD Stage Estimation', body: 'GFR-based staging maps every result to Stage 1–5 using established clinical thresholds.', accent: '#9B6DFF', delay: 160 },
     { icon: '🚦', title: 'Early Detection Alerts', body: 'Specialized warning system for high-risk adult groups, including young adults and older patients with family history.', accent: '#FFAA2C', delay: 240 },
     { icon: '💊', title: 'Personalized Guidance', body: 'Evidence-based health recommendations tailored to each patient\'s specific lab values, age group, and identified risk factors.', accent: '#00E5B4', delay: 320 },
     { icon: '🔬', title: 'Leakage-Safe Multi-Model Ensemble', body: 'Logistic Regression, Random Forest, SVM, and XGBoost — all trained with train-only scaling and SMOTENC balancing on clinically validated data.', accent: '#2D6AFF', delay: 400 },
@@ -85,7 +85,8 @@ export default function Home() {
   ];
 
   const stages = [
-    { label: 'Stage 1–2', range: 'GFR ≥ 60', desc: 'Mild', color: '#00E5B4', w: '32%' },
+    { label: 'Stage 1', range: 'GFR ≥ 90', desc: 'Normal / high', color: '#00E5B4', w: '16%' },
+    { label: 'Stage 2', range: 'GFR 60–89', desc: 'Mild', color: '#40CDA3', w: '16%' },
     { label: 'Stage 3a', range: 'GFR 45–59', desc: 'Mild–Moderate', color: '#FFAA2C', w: '20%' },
     { label: 'Stage 3b', range: 'GFR 30–44', desc: 'Moderate', color: '#FF8C42', w: '18%' },
     { label: 'Stage 4', range: 'GFR 15–29', desc: 'Severe', color: '#FF5E5B', w: '18%' },
@@ -287,7 +288,6 @@ export default function Home() {
       <div style={{ background: '#0D1526', border: '1px solid #172240', borderRadius: 18, padding: '2rem', marginBottom: '4rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 260 }}>
-            <div style={{ color: '#7A92BC', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>KDIGO International Guidelines</div>
             <h3 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.1rem', fontWeight: 700, color: '#DCE8FF', marginBottom: 8 }}>GFR-based CKD staging</h3>
             <p style={{ color: '#7A92BC', fontSize: '.85rem', lineHeight: 1.65, marginBottom: '1.2rem', maxWidth: 380 }}>
               Glomerular Filtration Rate is the gold standard for measuring kidney function. NephroScan maps every result directly onto the clinical staging framework.
