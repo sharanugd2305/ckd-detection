@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react';
+import React from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {SignInButton,SignUpButton,SignedIn,SignedOut,UserButton} from '@clerk/clerk-react';
 
@@ -6,31 +6,24 @@ const clerkConfigured=Boolean(process.env.REACT_APP_CLERK_PUBLISHABLE_KEY);
 
 export default function Navbar(){
   const {pathname}=useLocation();
-  const [solid,setSolid]=useState(false);
-
-  useEffect(()=>{
-    const h=()=>setSolid(window.scrollY>30);
-    window.addEventListener('scroll',h);
-    return()=>window.removeEventListener('scroll',h);
-  },[]);
 
   const links=[['/', 'Home'],['/predict','Predict'],['/models','Models'],['/about','About']];
 
   return(
-    <nav style={{
+    <nav className="site-navbar" style={{
       position:'sticky',top:0,zIndex:300,height:64,padding:'0 2rem',
       display:'flex',alignItems:'center',justifyContent:'space-between',
-      background:solid?'rgba(6,11,24,0.95)':'rgba(6,11,24,0.6)',
+      background:'#E8F0E8',
       backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',
-      borderBottom:`1px solid ${solid?'#172240':'transparent'}`,
+      borderBottom:'1px solid #D1E0D6',
       transition:'all .3s ease',
     }}>
-      <Link to="/" style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none'}}>
+      <Link className="site-brand" to="/" style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none'}}>
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
           <defs>
             <linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#2D6AFF"/>
-              <stop offset="100%" stopColor="#00E5B4"/>
+              <stop offset="0%" stopColor="#21675D"/>
+              <stop offset="100%" stopColor="#72C8B5"/>
             </linearGradient>
           </defs>
           <ellipse cx="17" cy="17" rx="14" ry="16" fill="url(#lg1)" opacity="0.15"/>
@@ -39,39 +32,39 @@ export default function Navbar(){
           <path d="M10 20 Q17 26 24 20" stroke="url(#lg1)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
         </svg>
         <div>
-          <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.05rem',fontWeight:700,color:'#DCE8FF',letterSpacing:'-.02em',lineHeight:1.1}}>NephroScan</div>
-          <div style={{fontSize:'.6rem',color:'#3A506A',letterSpacing:'.08em',textTransform:'uppercase'}}>CKD Detection System</div>
+          <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.05rem',fontWeight:700,color:'#26363D',letterSpacing:'-.02em',lineHeight:1.1}}>NephroScan</div>
+          <div style={{fontSize:'.6rem',color:'#74858B',letterSpacing:'.08em',textTransform:'uppercase'}}>CKD Detection System</div>
         </div>
       </Link>
 
-      <div style={{display:'flex',alignItems:'center',gap:4}}>
+      <div className="site-nav-links" style={{display:'flex',alignItems:'center',gap:4}}>
         {links.map(([p,l])=>{
           const active=pathname===p;
           return(
             <Link key={p} to={p} style={{
               textDecoration:'none',padding:'7px 14px',borderRadius:8,
               fontSize:'.875rem',fontWeight:active?600:400,
-              color:active?'#DCE8FF':'#7A92BC',
-              background:active?'rgba(45,106,255,.12)':'transparent',
-              border:`1px solid ${active?'rgba(45,106,255,.25)':'transparent'}`,
+              color:active?'#18594F':'#50636B',
+              background:active?'#E8F0EF':'transparent',
+              border:`1px solid ${active?'#C6D4D3':'transparent'}`,
               transition:'all .2s',
             }}
-              onMouseOver={e=>{if(!active){e.currentTarget.style.color='#DCE8FF';e.currentTarget.style.background='rgba(255,255,255,.04)';}}}
-              onMouseOut={e=>{if(!active){e.currentTarget.style.color='#7A92BC';e.currentTarget.style.background='transparent';}}}
+              onMouseOver={e=>{if(!active){e.currentTarget.style.color='#18594F';e.currentTarget.style.background='#E8F0EF';}}}
+              onMouseOut={e=>{if(!active){e.currentTarget.style.color='#50636B';e.currentTarget.style.background='transparent';}}}
             >{l}</Link>
           );
         })}
         {clerkConfigured&&(
           <>
             <SignedIn>
-              <Link to="/dashboard" style={{textDecoration:'none',padding:'7px 14px',borderRadius:8,fontSize:'.875rem',fontWeight:pathname==='/dashboard'?600:400,color:pathname==='/dashboard'?'#DCE8FF':'#7A92BC',background:pathname==='/dashboard'?'rgba(0,229,180,.1)':'transparent',border:`1px solid ${pathname==='/dashboard'?'rgba(0,229,180,.25)':'transparent'}`}}>Dashboard</Link>
+              <Link to="/dashboard" style={{textDecoration:'none',padding:'7px 14px',borderRadius:8,fontSize:'.875rem',fontWeight:pathname==='/dashboard'?600:400,color:pathname==='/dashboard'?'#18594F':'#50636B',background:pathname==='/dashboard'?'#E8F0EF':'transparent',border:`1px solid ${pathname==='/dashboard'?'#C6D4D3':'transparent'}`}}>Dashboard</Link>
             </SignedIn>
             <SignedOut>
               <SignInButton mode="modal">
-                <button type="button" style={{padding:'7px 12px',border:'1px solid #1F2F50',borderRadius:8,background:'transparent',color:'#DCE8FF',fontSize:'.82rem',cursor:'pointer'}}>Sign in</button>
+                <button type="button" style={{padding:'7px 12px',border:'1px solid #B9D0C3',borderRadius:8,background:'#F5F8F2',color:'#26363D',fontSize:'.82rem',cursor:'pointer'}}>Sign in</button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button type="button" style={{padding:'7px 12px',border:'1px solid rgba(0,229,180,.35)',borderRadius:8,background:'rgba(0,229,180,.08)',color:'#00E5B4',fontSize:'.82rem',cursor:'pointer'}}>Sign up</button>
+                <button type="button" style={{padding:'7px 12px',border:'1px solid #9CC8BD',borderRadius:8,background:'#E8F0EF',color:'#18594F',fontSize:'.82rem',cursor:'pointer'}}>Sign up</button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
