@@ -1,6 +1,6 @@
 import React,{useState,useMemo,useEffect} from 'react';
 import axios from 'axios';
-import {SignedIn,SignedOut,useAuth} from '@clerk/clerk-react';
+import {useAuth} from '@clerk/clerk-react';
 import { downloadAssessmentReport } from '../utils/assessmentReport';
 import API_URL from '../utils/api';
 
@@ -126,9 +126,18 @@ function Bar({pct,color='var(--accent)'}){
   );
 }
 
-export default function Predict(){
-  const MIN_REQUIRED_FIELDS=5;
+function AuthenticatedPredict(){
   const {getToken,isSignedIn}=useAuth();
+  return <PredictContent getToken={getToken} isSignedIn={isSignedIn}/>;
+}
+
+export default function Predict(){
+  if(process.env.REACT_APP_CLERK_PUBLISHABLE_KEY) return <AuthenticatedPredict/>;
+  return <PredictContent getToken={async()=>null} isSignedIn={false}/>;
+}
+
+function PredictContent({getToken,isSignedIn}){
+  const MIN_REQUIRED_FIELDS=5;
   const [form,setForm]=useState(loadSavedForm);
   const [result,setResult]=useState(null);
   const [simValues,setSimValues]=useState(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[field.key,field.default])));
@@ -195,7 +204,7 @@ export default function Predict(){
       ])));
       setTimeout(()=>document.getElementById('result-section')?.scrollIntoView({behavior:'smooth'}),150);
     }catch(error){
-      setError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Cannot reach backend. Make sure Flask is running on port 5000.');
+      setError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Cannot reach the prediction service. Please try again later.');
     }
     setLoading(false);
   };
@@ -212,7 +221,7 @@ export default function Predict(){
       const res=await axios.post(`${API_URL}/predict`,scenarioPayload,{headers});
       setSimResult(res.data);
     }catch(error){
-      setSimError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Simulation unavailable. Make sure Flask is running on port 5000.');
+      setSimError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Simulation unavailable. Please try again later.');
     }
     setSimLoading(false);
   };
@@ -276,16 +285,15 @@ export default function Predict(){
           Enter patient and laboratory values to receive a research-model estimate from <strong style={{color:'var(--accent)',fontWeight:600}}>{modelInfo?.winner || 'XGBoost'}</strong>. At least five of the 13 clinical values are required. This tool is not a diagnosis.
         </p>
         <div style={{marginTop:'1rem'}}>
-          <SignedIn>
+          {isSignedIn ? (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.06)',border:'1px solid rgba(0,212,168,.2)',borderRadius:4,padding:'6px 9px',color:'var(--accent)',fontSize:'.75rem'}}>
               <span style={{width:7,height:7,borderRadius:'50%',background:'var(--status-no-ckd)'}}/> Signed-in mode · linked to your account
             </div>
-          </SignedIn>
-          <SignedOut>
+          ) : (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.06)',border:'1px solid rgba(245,166,35,.2)',borderRadius:4,padding:'6px 9px',color:'var(--risk-moderate)',fontSize:'.75rem'}}>
               <span style={{width:7,height:7,borderRadius:'50%',background:'var(--risk-moderate)'}}/> Guest mode · one-time prediction, not stored
             </div>
-          </SignedOut>
+          )}
         </div>
       </div>
 
