@@ -67,13 +67,13 @@ const SECTION_FIELDS=[
 ];
 
 const RC={
-  success:{bg:'rgba(0,212,168,.08)',  border:'rgba(0,212,168,.22)',  text:'#00D4A8'},
-  warning:{bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.22)', text:'#F5A623'},
-  danger: {bg:'rgba(255,77,106,.08)', border:'rgba(255,77,106,.22)', text:'#FF4D6A'},
-  info:   {bg:'rgba(91,127,255,.08)', border:'rgba(91,127,255,.22)', text:'#5B7FFF'},
+  success:{bg:'rgba(0,212,168,.08)',  border:'rgba(0,212,168,.22)',  text:'var(--status-no-ckd)'},
+  warning:{bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.22)', text:'var(--risk-moderate)'},
+  danger: {bg:'rgba(255,77,106,.08)', border:'rgba(255,77,106,.22)', text:'var(--risk-very-high)'},
+  info:   {bg:'rgba(33,103,93,.08)', border:'rgba(33,103,93,.22)', text:'var(--accent)'},
 };
 
-const ageBadgeColor={under_20:'#5B7FFF',youngadult:'#00D4A8',adult:'#F5A623',senior:'#FF4D6A'};
+const ageBadgeColor={under_20:'var(--accent)',youngadult:'var(--status-no-ckd)',adult:'var(--risk-moderate)',senior:'var(--risk-very-high)'};
 
 /* ── Radar ──────────────────────────────────────────────────── */
 function KidneyRadar({values}){
@@ -98,7 +98,7 @@ function KidneyRadar({values}){
     <svg width="220" height="220" viewBox="0 0 220 220" style={{overflow:'visible'}}>
       <defs>
         <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#5B7FFF"/><stop offset="100%" stopColor="#00D4A8"/>
+          <stop offset="0%" stopColor="var(--accent)"/><stop offset="100%" stopColor="var(--status-no-ckd)"/>
         </linearGradient>
         <filter id="radarGlow">
           <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -106,20 +106,20 @@ function KidneyRadar({values}){
         </filter>
       </defs>
       {[.25,.5,.75,1].map(lv=>(
-        <polygon key={lv} points={axes.map((_,i)=>{const a=(i/n)*2*Math.PI-Math.PI/2;return `${cx+r*lv*Math.cos(a)},${cy+r*lv*Math.sin(a)}`;}).join(' ')} fill="none" stroke="#1E2247" strokeWidth="1"/>
+        <polygon key={lv} points={axes.map((_,i)=>{const a=(i/n)*2*Math.PI-Math.PI/2;return `${cx+r*lv*Math.cos(a)},${cy+r*lv*Math.sin(a)}`;}).join(' ')} fill="none" stroke="var(--border)" strokeWidth="1"/>
       ))}
-      {axes.map((_,i)=>{const a=(i/n)*2*Math.PI-Math.PI/2;return<line key={i} x1={cx} y1={cy} x2={cx+r*Math.cos(a)} y2={cy+r*Math.sin(a)} stroke="#1E2247" strokeWidth="1"/>;  })}
-      {filled&&<polygon points={pts.map(p=>`${p.x},${p.y}`).join(' ')} fill="rgba(91,127,255,.15)" stroke="url(#rg)" strokeWidth="2" filter="url(#radarGlow)" style={{transition:'all .4s ease'}}/>}
-      {pts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={3.5} fill={p.val>0?'#5B7FFF':'#1E2247'} style={{transition:'all .4s ease'}}/>)}
-      {pts.map((p,i)=><text key={i} x={p.lx} y={p.ly+4} textAnchor="middle" fontSize="9" fill={p.val>0?'#8BA0C8':'#4A5E80'} fontFamily="JetBrains Mono,monospace">{p.label}</text>)}
+      {axes.map((_,i)=>{const a=(i/n)*2*Math.PI-Math.PI/2;return<line key={i} x1={cx} y1={cy} x2={cx+r*Math.cos(a)} y2={cy+r*Math.sin(a)} stroke="var(--border)" strokeWidth="1"/>;  })}
+      {filled&&<polygon points={pts.map(p=>`${p.x},${p.y}`).join(' ')} fill="rgba(33,103,93,.15)" stroke="url(#rg)" strokeWidth="2" filter="url(#radarGlow)" style={{transition:'all .4s ease'}}/>}
+      {pts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={3.5} fill={p.val>0?'var(--accent)':'var(--border)'} style={{transition:'all .4s ease'}}/>)}
+      {pts.map((p,i)=><text key={i} x={p.lx} y={p.ly+4} textAnchor="middle" fontSize="9" fill={p.val>0?'var(--text-secondary)':'var(--text-muted)'} fontFamily="JetBrains Mono,monospace">{p.label}</text>)}
     </svg>
   );
 }
 
 /* ── Bar ─────────────────────────────────────────────────────── */
-function Bar({pct,color='#5B7FFF'}){
+function Bar({pct,color='var(--accent)'}){
   return(
-    <div style={{background:'#07081A',borderRadius:999,height:8,overflow:'hidden',border:'1px solid #1E2247'}}>
+    <div style={{background:'var(--surface-inset)',borderRadius:999,height:8,overflow:'hidden',border:'1px solid var(--border)'}}>
       <div style={{height:'100%',borderRadius:999,background:color,width:`${pct}%`,transition:'width .6s ease',boxShadow:`0 0 12px ${color}80`}}/>
     </div>
   );
@@ -253,8 +253,8 @@ export default function Predict(){
 
   const iStyle={
     width:'100%',padding:'10px 12px',
-    background:'rgba(7,8,26,0.7)',
-    border:'1px solid #1E2247',borderRadius:8,color:'#E8EEFF',
+    background:'var(--surface-inset)',
+    border:'1px solid var(--border)',borderRadius:8,color:'var(--text)',
     fontSize:'.93rem',outline:'none',fontFamily:'JetBrains Mono,monospace',
     transition:'border-color .2s, box-shadow .2s',
   };
@@ -265,24 +265,24 @@ export default function Predict(){
       {/* Header */}
       <div style={{marginBottom:'2rem'}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-          <span style={{width:7,height:7,borderRadius:'50%',background:'#5B7FFF',display:'inline-block',animation:'blink 1.5s ease infinite',boxShadow:'0 0 8px #5B7FFF'}}/>
-          <span style={{fontSize:'.72rem',color:'#43C6B5',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase'}}>CKD risk assessment</span>
+          <span style={{width:7,height:7,borderRadius:'50%',background:'var(--accent)',display:'inline-block',animation:'blink 1.5s ease infinite',boxShadow:'0 0 8px var(--accent)'}}/>
+          <span style={{fontSize:'.72rem',color:'var(--accent)',fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase'}}>CKD risk assessment</span>
         </div>
-        <h1 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:700,letterSpacing:'-.035em',marginBottom:6,color:'#E8EEFF'}}>
+        <h1 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:700,letterSpacing:'-.035em',marginBottom:6,color:'var(--text)'}}>
           Clinical risk assessment
         </h1>
-        <p style={{color:'#A9B8C8',fontSize:'.9rem',lineHeight:1.65,maxWidth:720}}>
-          Enter patient and laboratory values to receive a research-model estimate from <strong style={{color:'#43C6B5',fontWeight:600}}>{modelInfo?.winner || 'XGBoost'}</strong>. At least five of the 13 clinical values are required. This tool is not a diagnosis.
+        <p style={{color:'var(--text-secondary)',fontSize:'.9rem',lineHeight:1.65,maxWidth:720}}>
+          Enter patient and laboratory values to receive a research-model estimate from <strong style={{color:'var(--accent)',fontWeight:600}}>{modelInfo?.winner || 'XGBoost'}</strong>. At least five of the 13 clinical values are required. This tool is not a diagnosis.
         </p>
         <div style={{marginTop:'1rem'}}>
           <SignedIn>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.06)',border:'1px solid rgba(0,212,168,.2)',borderRadius:4,padding:'6px 9px',color:'#43C6B5',fontSize:'.75rem'}}>
-              <span style={{width:7,height:7,borderRadius:'50%',background:'#00D4A8'}}/> Signed-in mode · linked to your account
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,212,168,.06)',border:'1px solid rgba(0,212,168,.2)',borderRadius:4,padding:'6px 9px',color:'var(--accent)',fontSize:'.75rem'}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:'var(--status-no-ckd)'}}/> Signed-in mode · linked to your account
             </div>
           </SignedIn>
           <SignedOut>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.06)',border:'1px solid rgba(245,166,35,.2)',borderRadius:4,padding:'6px 9px',color:'#F5A623',fontSize:'.75rem'}}>
-              <span style={{width:7,height:7,borderRadius:'50%',background:'#F5A623'}}/> Guest mode · one-time prediction, not stored
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(245,166,35,.06)',border:'1px solid rgba(245,166,35,.2)',borderRadius:4,padding:'6px 9px',color:'var(--risk-moderate)',fontSize:'.75rem'}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:'var(--risk-moderate)'}}/> Guest mode · one-time prediction, not stored
             </div>
           </SignedOut>
         </div>
@@ -295,27 +295,27 @@ export default function Predict(){
         {/* ── LEFT: form ── */}
         <div>
           {/* Progress */}
-          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem 1.2rem',marginBottom:'1.2rem',display:'flex',alignItems:'center',gap:'1rem'}}>
+          <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'1rem 1.2rem',marginBottom:'1.2rem',display:'flex',alignItems:'center',gap:'1rem'}}>
             <div style={{flex:1}}>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:7}}>
-                <span style={{fontSize:'.78rem',color:'#8BA0C8',fontWeight:500}}>Form completion</span>
-                <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.78rem',color:progress===100?'#00D4A8':'#5B7FFF',fontWeight:700}}>{progress}%</span>
+                <span style={{fontSize:'.78rem',color:'var(--text-secondary)',fontWeight:500}}>Form completion</span>
+                <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.78rem',color:progress===100?'var(--status-no-ckd)':'var(--accent)',fontWeight:700}}>{progress}%</span>
               </div>
-              <Bar pct={progress} color={progress===100?'#00D4A8':'#5B7FFF'}/>
+              <Bar pct={progress} color={progress===100?'var(--status-no-ckd)':'var(--accent)'}/>
             </div>
-            {progress===100&&<span style={{fontSize:'.8rem',color:'#00D4A8',fontWeight:700,whiteSpace:'nowrap',animation:'fadeIn .3s ease'}}>✓ Ready</span>}
+            {progress===100&&<span style={{fontSize:'.8rem',color:'var(--status-no-ckd)',fontWeight:700,whiteSpace:'nowrap',animation:'fadeIn .3s ease'}}>✓ Ready</span>}
           </div>
 
           {/* Grouped input sections */}
           <div style={{display:'grid',gap:'1.2rem',marginBottom:'1.2rem'}}>
             {SECTION_FIELDS.map((section)=>(
-              <div key={section.title} style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.25rem'}}>
+              <div key={section.title} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'1.25rem'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:'1rem'}}>
                   <div>
-                    <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>
+                    <div style={{fontSize:'.68rem',color:'var(--accent)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>
                       {section.title}
                     </div>
-                    <div style={{fontSize:'.72rem',color:'#8BA0C8',marginTop:4}}>{section.subtitle}</div>
+                    <div style={{fontSize:'.72rem',color:'var(--text-secondary)',marginTop:4}}>{section.subtitle}</div>
                   </div>
                 </div>
                 <div className="predict-field-grid">
@@ -327,43 +327,43 @@ export default function Predict(){
                       const isFilled = form[f.key]!=='' || form.HeightCm!=='' || form.WeightKg!=='';
                       return (
                         <div key={f.key} style={{
-                          background:'rgba(7,8,26,0.6)',
-                          border:`1px solid ${isFilled?'#2A3060':'#1E2247'}`,
+                          background:'var(--surface-inset)',
+                          border:`1px solid ${isFilled?'var(--border-strong)':'var(--border)'}`,
                           borderRadius:10,padding:'1rem',transition:'border-color .2s, box-shadow .2s',
-                          boxShadow:isFilled?'0 4px 16px rgba(91,127,255,.08)':'none',
+                          boxShadow:isFilled?'0 4px 16px rgba(33,103,93,.08)':'none',
                         }}>
                           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                            <label style={{fontSize:'.8rem',color:'#8BA0C8',fontWeight:500}}>{f.label}</label>
-                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'#4A5E80',background:'#0C0E22',padding:'2px 7px',borderRadius:4,border:'1px solid #1E2247'}}>{f.unit}</span>
+                            <label style={{fontSize:'.8rem',color:'var(--text-secondary)',fontWeight:500}}>{f.label}</label>
+                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'var(--text-muted)',background:'var(--surface-inset)',padding:'2px 7px',borderRadius:4,border:'1px solid var(--border)'}}>{f.unit}</span>
                           </div>
                           <input
                             type="number" min={f.min} max={f.max} step={f.step}
                             value={form[f.key]} placeholder="—"
                             onChange={e=>set(f.key,e.target.value)}
                             style={iStyle}
-                            onFocus={e=>{e.target.style.borderColor='#5B7FFF';e.target.style.boxShadow='0 0 0 3px rgba(91,127,255,.15)';}}
-                            onBlur={e=>{e.target.style.borderColor=isFilled?'#2A3060':'#1E2247';e.target.style.boxShadow='none';}}
+                            onFocus={e=>{e.target.style.borderColor='var(--accent)';e.target.style.boxShadow='0 0 0 3px rgba(33,103,93,.15)';}}
+                            onBlur={e=>{e.target.style.borderColor=isFilled?'var(--border-strong)':'var(--border)';e.target.style.boxShadow='none';}}
                           />
 
                           <div style={{marginTop:12,display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                             {BMI_EXTRA_FIELDS.map((extra) => (
-                              <div key={extra.key} style={{background:'rgba(7,8,26,0.8)',border:'1px solid #1E2247',borderRadius:8,padding:'8px 10px'}}>
-                                <div style={{fontSize:'.66rem',color:'#8BA0C8',marginBottom:4}}>{extra.label}</div>
+                              <div key={extra.key} style={{background:'var(--surface-inset)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px'}}>
+                                <div style={{fontSize:'.66rem',color:'var(--text-secondary)',marginBottom:4}}>{extra.label}</div>
                                 <input
                                   type="number" min={extra.min} max={extra.max} step={extra.step}
                                   value={form[extra.key]} placeholder={extra.unit}
                                   onChange={e=>set(extra.key,e.target.value)}
-                                  style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'#E8EEFF',fontFamily:'JetBrains Mono,monospace',fontSize:'.82rem'}}
+                                  style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'var(--text)',fontFamily:'JetBrains Mono,monospace',fontSize:'.82rem'}}
                                 />
                               </div>
                             ))}
                           </div>
 
                           <div style={{display:'flex',justifyContent:'space-between',marginTop:8,gap:6}}>
-                            <span style={{fontSize:'.67rem',color:'#4A5E80',lineHeight:1.4,flex:1}}>
+                            <span style={{fontSize:'.67rem',color:'var(--text-muted)',lineHeight:1.4,flex:1}}>
                               {form[f.key] === '' ? 'If BMI is unknown, height and weight will be used to calculate it automatically.' : f.desc}
                             </span>
-                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'#5B7FFF',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
+                            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'var(--accent)',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
                           </div>
                         </div>
                       );
@@ -374,13 +374,13 @@ export default function Predict(){
                       const selected = form[f.key];
                       return (
                         <div key={f.key} style={{
-                          background:'rgba(7,8,26,0.6)',
-                          border:`1px solid ${selected!==''?'#2A3060':'#1E2247'}`,
+                          background:'var(--surface-inset)',
+                          border:`1px solid ${selected!==''?'var(--border-strong)':'var(--border)'}`,
                           borderRadius:10,padding:'1rem',transition:'border-color .2s, box-shadow .2s',
-                          boxShadow:selected!==''?'0 4px 16px rgba(91,127,255,.08)':'none',
+                          boxShadow:selected!==''?'0 4px 16px rgba(33,103,93,.08)':'none',
                         }}>
                           <div style={{marginBottom:8}}>
-                            <label style={{fontSize:'.8rem',color:'#8BA0C8',fontWeight:500}}>{f.label}</label>
+                            <label style={{fontSize:'.8rem',color:'var(--text-secondary)',fontWeight:500}}>{f.label}</label>
                           </div>
                           <div style={{display:'flex',gap:8}}>
                             {f.options.map(opt=>(
@@ -392,16 +392,16 @@ export default function Predict(){
                                   fontWeight:700,fontSize:'.85rem',fontFamily:'Space Grotesk,sans-serif',
                                   transition:'all .2s',
                                   background: selected===opt.val
-                                    ? '#176B72'
-                                    : 'rgba(30,34,71,0.7)',
-                                  color: selected===opt.val ? '#fff' : '#8BA0C8',
-                                  boxShadow: selected===opt.val ? '0 4px 14px rgba(91,127,255,.35)' : 'none',
-                                  outline: selected===opt.val ? 'none' : '1px solid #1E2247',
+                                    ? 'var(--button-bg)'
+                                    : 'var(--surface-inset)',
+                                  color: selected===opt.val ? '#fff' : 'var(--text-secondary)',
+                                  boxShadow: selected===opt.val ? '0 4px 14px rgba(33,103,93,.18)' : 'none',
+                                  outline: selected===opt.val ? 'none' : '1px solid var(--border)',
                                 }}
                               >{opt.label}</button>
                             ))}
                           </div>
-                          <div style={{marginTop:8,fontSize:'.67rem',color:'#4A5E80',lineHeight:1.4}}>{f.desc}</div>
+                          <div style={{marginTop:8,fontSize:'.67rem',color:'var(--text-muted)',lineHeight:1.4}}>{f.desc}</div>
                         </div>
                       );
                     }
@@ -410,26 +410,26 @@ export default function Predict(){
                     const isFilled=form[f.key]!=='';
                     return (
                       <div key={f.key} style={{
-                        background:'rgba(7,8,26,0.6)',
-                        border:`1px solid ${isFilled?'#2A3060':'#1E2247'}`,
+                        background:'var(--surface-inset)',
+                        border:`1px solid ${isFilled?'var(--border-strong)':'var(--border)'}`,
                         borderRadius:10,padding:'1rem',transition:'border-color .2s, box-shadow .2s',
-                        boxShadow:isFilled?'0 4px 16px rgba(91,127,255,.08)':'none',
+                        boxShadow:isFilled?'0 4px 16px rgba(33,103,93,.08)':'none',
                       }}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                          <label style={{fontSize:'.8rem',color:'#8BA0C8',fontWeight:500}}>{f.label}</label>
-                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'#4A5E80',background:'#0C0E22',padding:'2px 7px',borderRadius:4,border:'1px solid #1E2247'}}>{f.unit}</span>
+                          <label style={{fontSize:'.8rem',color:'var(--text-secondary)',fontWeight:500}}>{f.label}</label>
+                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.68rem',color:'var(--text-muted)',background:'var(--surface-inset)',padding:'2px 7px',borderRadius:4,border:'1px solid var(--border)'}}>{f.unit}</span>
                         </div>
                         <input
                           type="number" min={f.min} max={f.max} step={f.step}
                           value={form[f.key]} placeholder="—"
                           onChange={e=>set(f.key,e.target.value)}
                           style={iStyle}
-                          onFocus={e=>{e.target.style.borderColor='#5B7FFF';e.target.style.boxShadow='0 0 0 3px rgba(91,127,255,.15)';}}
-                          onBlur={e=>{e.target.style.borderColor=isFilled?'#2A3060':'#1E2247';e.target.style.boxShadow='none';}}
+                          onFocus={e=>{e.target.style.borderColor='var(--accent)';e.target.style.boxShadow='0 0 0 3px rgba(33,103,93,.15)';}}
+                          onBlur={e=>{e.target.style.borderColor=isFilled?'var(--border-strong)':'var(--border)';e.target.style.boxShadow='none';}}
                         />
                         <div style={{display:'flex',justifyContent:'space-between',marginTop:6,gap:6}}>
-                          <span style={{fontSize:'.67rem',color:'#4A5E80',lineHeight:1.4,flex:1}}>{f.desc}</span>
-                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'#5B7FFF',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
+                          <span style={{fontSize:'.67rem',color:'var(--text-muted)',lineHeight:1.4,flex:1}}>{f.desc}</span>
+                          <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem',color:'var(--accent)',flexShrink:0,whiteSpace:'nowrap'}}>↔ {f.normal}</span>
                         </div>
                       </div>
                     );
@@ -440,23 +440,23 @@ export default function Predict(){
           </div>
 
           {error&&(
-            <div style={{background:'rgba(255,77,106,.09)',border:'1px solid rgba(255,77,106,.3)',borderRadius:10,padding:'11px 14px',color:'#FF4D6A',fontSize:'.85rem',marginBottom:'1rem',animation:'fadeIn .3s ease',boxShadow:'0 4px 16px rgba(255,77,106,.08)'}}>
+            <div style={{background:'rgba(255,77,106,.09)',border:'1px solid rgba(255,77,106,.3)',borderRadius:10,padding:'11px 14px',color:'var(--risk-very-high)',fontSize:'.85rem',marginBottom:'1rem',animation:'fadeIn .3s ease',boxShadow:'0 4px 16px rgba(255,77,106,.08)'}}>
               ⚠️ {error}
             </div>
           )}
 
           <div style={{display:'flex',gap:'1rem'}}>
             <button className="predict-action" onClick={submit} disabled={loading} style={{
-              flex:1,padding:'12px',borderRadius:6,border:'1px solid #176B72',
+              flex:1,padding:'12px',borderRadius:6,border:'1px solid var(--button-bg)',
               cursor:loading?'not-allowed':'pointer',
-              background:loading?'#172838':'#176B72',
+              background:loading?'var(--surface-hover)':'var(--button-bg)',
               color:'#fff',fontFamily:'Space Grotesk,sans-serif',
               fontSize:'1rem',fontWeight:700,letterSpacing:'-.01em',
               boxShadow:'none',
               transition:'background-color .2s',
             }}
-              onMouseOver={e=>{if(!loading)e.currentTarget.style.background='#1B7C82';}}
-              onMouseOut={e=>{e.currentTarget.style.background=loading?'#172838':'#176B72';}}
+              onMouseOver={e=>{if(!loading)e.currentTarget.style.background='var(--button-hover)';}}
+              onMouseOut={e=>{e.currentTarget.style.background=loading?'var(--surface-hover)':'var(--button-bg)';}}
             >
               {loading?(
                 <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
@@ -465,41 +465,41 @@ export default function Predict(){
                 </span>
               ):`Run CKD Analysis →`}
             </button>
-            <button onClick={reset} style={{padding:'12px 18px',borderRadius:6,border:'1px solid #344758',background:'transparent',color:'#A9B8C8',fontSize:'.9rem',cursor:'pointer',transition:'all .2s'}}
-              onMouseOver={e=>{e.currentTarget.style.color='#E8EEFF';e.currentTarget.style.borderColor='#52697B';e.currentTarget.style.background='#142230';}}
-              onMouseOut={e=>{e.currentTarget.style.color='#A9B8C8';e.currentTarget.style.borderColor='#344758';e.currentTarget.style.background='transparent';}}
+            <button onClick={reset} style={{padding:'12px 18px',borderRadius:6,border:'1px solid var(--border-strong)',background:'transparent',color:'var(--text-secondary)',fontSize:'.9rem',cursor:'pointer',transition:'all .2s'}}
+              onMouseOver={e=>{e.currentTarget.style.color='var(--text)';e.currentTarget.style.borderColor='var(--accent)';e.currentTarget.style.background='var(--surface-hover)';}}
+              onMouseOut={e=>{e.currentTarget.style.color='var(--text-secondary)';e.currentTarget.style.borderColor='var(--border-strong)';e.currentTarget.style.background='transparent';}}
             >Reset</button>
           </div>
         </div>
 
         {/* ── RIGHT: radar + quick ref ── */}
         <div className="predict-sidebar" style={{position:'sticky',top:80,display:'flex',flexDirection:'column',gap:'1rem'}}>
-          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem',textAlign:'center'}}>
-            <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Live Input Radar</div>
+          <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'1.2rem',textAlign:'center'}}>
+            <div style={{fontSize:'.68rem',color:'var(--accent)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Live Input Radar</div>
             <KidneyRadar values={form}/>
-            <div style={{marginTop:'1rem',fontSize:'.74rem',color:'#4A5E80',lineHeight:1.6}}>Updates as you enter values</div>
+            <div style={{marginTop:'1rem',fontSize:'.74rem',color:'var(--text-muted)',lineHeight:1.6}}>Updates as you enter values</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:5,justifyContent:'center',marginTop:'1rem'}}>
               {ALL_KEYS.map((k,i)=>(
-                <div key={i} style={{width:7,height:7,borderRadius:'50%',background:form[k]!==''?'#5B7FFF':'#1E2247',transition:'background .3s ease',boxShadow:form[k]!==''?'0 0 6px rgba(91,127,255,.6)':'none'}}/>
+                <div key={i} style={{width:7,height:7,borderRadius:'50%',background:form[k]!==''?'var(--accent)':'var(--border)',transition:'background .3s ease',boxShadow:form[k]!==''?'0 0 6px rgba(33,103,93,.4)':'none'}}/>
               ))}
             </div>
-            <div style={{marginTop:8,fontFamily:'JetBrains Mono,monospace',fontSize:'.7rem',color:'#4A5E80'}}>
+            <div style={{marginTop:8,fontFamily:'JetBrains Mono,monospace',fontSize:'.7rem',color:'var(--text-muted)'}}>
               {ALL_KEYS.filter(k=>form[k]!=='').length} / {ALL_KEYS.length} filled
             </div>
           </div>
-          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem'}}>
-            <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Quick Reference</div>
+          <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'1.2rem'}}>
+            <div style={{fontSize:'.68rem',color:'var(--accent)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>Quick Reference</div>
             {[
-              {label:'GFR',       normal:'≥ 90',    color:'#00D4A8'},
-              {label:'Creatinine',normal:'0.6–1.2', color:'#5B7FFF'},
-              {label:'BUN',       normal:'8–25',     color:'#5B7FFF'},
-              {label:'Hemoglobin',normal:'12–17',    color:'#F5A623'},
-              {label:'HbA1c',     normal:'< 5.7',    color:'#38BDF8'},
-              {label:'Protein',   normal:'< 0.15',   color:'#FF4D6A'},
+              {label:'GFR',       normal:'≥ 90',    color:'var(--status-no-ckd)'},
+              {label:'Creatinine',normal:'0.6–1.2', color:'var(--accent)'},
+              {label:'BUN',       normal:'8–25',     color:'var(--accent)'},
+              {label:'Hemoglobin',normal:'12–17',    color:'var(--risk-moderate)'},
+              {label:'HbA1c',     normal:'< 5.7',    color:'var(--accent)'},
+              {label:'Protein',   normal:'< 0.15',   color:'var(--risk-very-high)'},
             ].map((r,i)=>(
-              <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderBottom:i<5?'1px solid #1E2247':'none'}}>
+              <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderBottom:i<5?'1px solid var(--border)':'none'}}>
                 <span style={{color:r.color,fontSize:'.75rem',fontWeight:600}}>{r.label}</span>
-                <span style={{fontFamily:'JetBrains Mono,monospace',color:'#4A5E80',fontSize:'.72rem'}}>{r.normal}</span>
+                <span style={{fontFamily:'JetBrains Mono,monospace',color:'var(--text-muted)',fontSize:'.72rem'}}>{r.normal}</span>
               </div>
             ))}
           </div>
@@ -512,26 +512,26 @@ export default function Predict(){
 
           {/* Model used banner */}
           <div style={{
-            background:'#0D1824',
-            border:'1px solid #263949',
+            background:'var(--surface)',
+            border:'1px solid var(--border)',
             borderRadius:8,padding:'10px 14px',marginBottom:'1rem',
             display:'flex',alignItems:'center',gap:10,
             boxShadow:'0 4px 20px rgba(0,212,168,.06)',
           }}>
-            <span style={{width:7,height:7,borderRadius:'50%',background:'#00D4A8',display:'inline-block',boxShadow:'0 0 8px #00D4A8'}}/>
-            <span style={{fontSize:'.8rem',color:'#8BA0C8'}}>
-              Prediction model: <span style={{color:'#43C6B5',fontWeight:700}}>{result.model_name || modelInfo?.winner || 'XGBoost'}</span>
+            <span style={{width:7,height:7,borderRadius:'50%',background:'var(--status-no-ckd)',display:'inline-block',boxShadow:'0 0 8px var(--status-no-ckd)'}}/>
+            <span style={{fontSize:'.8rem',color:'var(--text-secondary)'}}>
+              Prediction model: <span style={{color:'var(--accent)',fontWeight:700}}>{result.model_name || modelInfo?.winner || 'XGBoost'}</span>
             </span>
           </div>
 
           {(result.interpretation || result.risk_factors?.length || result.filled_defaults) && (
-            <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1rem 1.2rem',marginBottom:'1rem'}}>
-              <div style={{fontSize:'.68rem',color:'#5B7FFF',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:8}}>Live interpretation</div>
-              <div style={{color:'#E8EEFF',lineHeight:1.7,fontSize:'.9rem'}}>{result.interpretation}</div>
+            <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'1rem 1.2rem',marginBottom:'1rem'}}>
+              <div style={{fontSize:'.68rem',color:'var(--accent)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:8}}>Live interpretation</div>
+              <div style={{color:'var(--text)',lineHeight:1.7,fontSize:'.9rem'}}>{result.interpretation}</div>
               {result.risk_factors?.length > 0 && (
                 <div style={{marginTop:10,display:'flex',flexWrap:'wrap',gap:8}}>
                   {result.risk_factors.map((factor, idx) => (
-                    <span key={idx} style={{background:'rgba(245,166,35,.08)',border:'1px solid rgba(245,166,35,.22)',color:'#F5A623',borderRadius:4,padding:'5px 8px',fontSize:'.72rem',fontWeight:500}}>
+                    <span key={idx} style={{background:'rgba(245,166,35,.08)',border:'1px solid rgba(245,166,35,.22)',color:'var(--risk-moderate)',borderRadius:4,padding:'5px 8px',fontSize:'.72rem',fontWeight:500}}>
                       {factor}
                     </span>
                   ))}
@@ -542,10 +542,10 @@ export default function Predict(){
 
           {/* Pediatric banner */}
           {result.is_pediatric&&(
-            <div style={{background:'#0D1824',border:'1px solid #365362',borderRadius:8,padding:'12px 16px',marginBottom:'1rem',display:'flex',alignItems:'center',gap:12}}>
+            <div style={{background:'var(--surface)',border:'1px solid var(--border-strong)',borderRadius:8,padding:'12px 16px',marginBottom:'1rem',display:'flex',alignItems:'center',gap:12}}>
               <div>
-                <div style={{color:'#43C6B5',fontWeight:700,fontSize:'.9rem',marginBottom:2}}>Pediatric patient</div>
-                <div style={{color:'#8BA0C8',fontSize:'.82rem'}}>{result.age_label} · Age-adjusted clinical reference ranges used throughout this report.</div>
+                <div style={{color:'var(--accent)',fontWeight:700,fontSize:'.9rem',marginBottom:2}}>Pediatric patient</div>
+                <div style={{color:'var(--text-secondary)',fontSize:'.82rem'}}>{result.age_label} · Age-adjusted clinical reference ranges used throughout this report.</div>
               </div>
             </div>
           )}
@@ -562,23 +562,23 @@ export default function Predict(){
             position:'relative',overflow:'hidden',
             boxShadow:result.prediction===1?'0 16px 48px rgba(255,77,106,.1)':'0 16px 48px rgba(0,212,168,.1)',
           }}>
-            <div style={{width:10,height:10,borderRadius:'50%',background:result.prediction===1?'#FF4D6A':'#00D4A8',margin:'0 auto 1rem'}}/>
-            <h2 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:800,marginBottom:4,letterSpacing:'-.03em',color:result.prediction===1?'#FF4D6A':'#00D4A8'}}>
+            <div style={{width:10,height:10,borderRadius:'50%',background:result.prediction===1?'var(--risk-very-high)':'var(--status-no-ckd)',margin:'0 auto 1rem'}}/>
+            <h2 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'2.1rem',fontWeight:800,marginBottom:4,letterSpacing:'-.03em',color:result.prediction===1?'var(--risk-very-high)':'var(--status-no-ckd)'}}>
               {result.label}
             </h2>
-            <div style={{color:'#8BA0C8',fontSize:'.9rem',marginBottom:'1.8rem'}}>
+            <div style={{color:'var(--text-secondary)',fontSize:'.9rem',marginBottom:'1.8rem'}}>
               Risk Classification: <span style={{fontWeight:700,color:result.risk_color}}>{result.risk_level}</span>
-              {result.age_label&&<><span style={{color:'#4A5E80',margin:'0 8px'}}>·</span><span style={{color:ageBadgeColor[result.age_group]||'#8BA0C8'}}>{result.age_label}</span></>}
+              {result.age_label&&<><span style={{color:'var(--text-muted)',margin:'0 8px'}}>·</span><span style={{color:ageBadgeColor[result.age_group]||'var(--text-secondary)'}}>{result.age_label}</span></>}
             </div>
             <div style={{maxWidth:500,margin:'0 auto'}}>
-              <div style={{display:'flex',justifyContent:'space-between',marginBottom:7,fontSize:'.82rem',color:'#8BA0C8'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:7,fontSize:'.82rem',color:'var(--text-secondary)'}}>
                 <span>CKD Probability</span>
-                <span style={{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#E8EEFF'}}>{result.probability}%</span>
+                <span style={{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'var(--text)'}}>{result.probability}%</span>
               </div>
-              <div style={{background:'#07081A',borderRadius:999,height:10,overflow:'hidden',border:'1px solid #1E2247'}}>
+              <div style={{background:'var(--surface-inset)',borderRadius:999,height:10,overflow:'hidden',border:'1px solid var(--border)'}}>
                 <div style={{
                   height:'100%',borderRadius:999,
-                  background:result.prediction===1?'#FF4D6A':'#00D4A8',
+                  background:result.prediction===1?'var(--risk-very-high)':'var(--status-no-ckd)',
                   width:`${result.probability}%`,transition:'width 1.4s cubic-bezier(.4,0,.2,1)',
                   boxShadow:`0 0 18px ${result.prediction===1?'rgba(255,77,106,.45)':'rgba(0,212,168,.45)'}`,
                 }}/>
@@ -591,44 +591,44 @@ export default function Predict(){
           {/* Stats */}
           <div style={{display:'grid',gridTemplateColumns:result.ckd_stage?'repeat(3,1fr)':'repeat(2,1fr)',gap:'.65rem',marginBottom:result.prediction===1?'0':'1.2rem'}}>
             {[
-              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Estimated probability',color:'#5B7FFF'},
-              ...(result.ckd_stage?[{label:'ESTIMATED CKD STAGE',val:result.ckd_stage,sub:result.stage_desc,color:'#FF4D6A'}]:[]),
+              {label:'CKD PROBABILITY',val:`${result.probability}%`,sub:'Estimated probability',color:'var(--accent)'},
+              ...(result.ckd_stage?[{label:'ESTIMATED CKD STAGE',val:result.ckd_stage,sub:result.stage_desc,color:'var(--risk-very-high)'}]:[]),
               {label:'RISK LEVEL',val:result.risk_level,sub:'Based on probability',color:result.risk_color},
             ].map((s,i)=>(
-              <div key={i} style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem .65rem',textAlign:'center'}}>
-                <div style={{fontSize:'.61rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{s.label}</div>
+              <div key={i} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'1rem .65rem',textAlign:'center'}}>
+                <div style={{fontSize:'.61rem',color:'var(--text-muted)',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{s.label}</div>
                 <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.3rem',fontWeight:800,color:s.color,marginBottom:4}}>{s.val}</div>
-                <div style={{color:'#8BA0C8',fontSize:'.68rem',lineHeight:1.4}}>{s.sub}</div>
+                <div style={{color:'var(--text-secondary)',fontSize:'.68rem',lineHeight:1.4}}>{s.sub}</div>
               </div>
             ))}
           </div>
 
           {/* Stage scale */}
           {result.prediction===1&&(
-            <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:8,padding:'1rem'}}>
-              <div style={{fontSize:'.65rem',color:'#4A5E80',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'.75rem'}}>
+            <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'1rem'}}>
+              <div style={{fontSize:'.65rem',color:'var(--text-muted)',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'.75rem'}}>
                 CKD Stage Scale · GFR-Based
               </div>
               <div style={{display:'flex',gap:5}}>
                 {[
-                  {label:'Stage 1',  range:'GFR ≥ 90', color:'#00D4A8'},
+                  {label:'Stage 1',  range:'GFR ≥ 90', color:'var(--status-no-ckd)'},
                   {label:'Stage 2',  range:'GFR 60–89',color:'#40CDA3'},
-                  {label:'Stage 3a', range:'GFR 45–59',color:'#F5A623'},
+                  {label:'Stage 3a', range:'GFR 45–59',color:'var(--risk-moderate)'},
                   {label:'Stage 3b', range:'GFR 30–44',color:'#F97316'},
                   {label:'Stage 4',  range:'GFR 15–29',color:'#EF4444'},
-                  {label:'Stage 5',  range:'GFR < 15', color:'#FF4D6A'},
+                  {label:'Stage 5',  range:'GFR < 15', color:'var(--risk-very-high)'},
                 ].map((s,i)=>{
                   const active = normalizeStageName(result.ckd_stage) === normalizeStageName(s.label);
                   return(
-                    <div key={i} style={{flex:1,minWidth:0,borderRadius:9,padding:'9px 3px',textAlign:'center',background:active?s.color:'rgba(255,255,255,.02)',border:`1px solid ${active?s.color:'#1E2247'}`,transition:'all .35s ease',boxShadow:active?`0 6px 20px ${s.color}50`:'none'}}>
+                    <div key={i} style={{flex:1,minWidth:0,borderRadius:9,padding:'9px 3px',textAlign:'center',background:active?s.color:'rgba(255,255,255,.02)',border:`1px solid ${active?s.color:'var(--border)'}`,transition:'all .35s ease',boxShadow:active?`0 6px 20px ${s.color}50`:'none'}}>
                       <div style={{fontWeight:700,fontSize:'.66rem',color:active?'#fff':s.color}}>{s.label}</div>
-                      <div style={{fontSize:'.58rem',marginTop:3,color:active?'rgba(255,255,255,.75)':'#4A5E80'}}>{s.range}</div>
+                      <div style={{fontSize:'.58rem',marginTop:3,color:active?'rgba(255,255,255,.75)':'var(--text-muted)'}}>{s.range}</div>
                     </div>
                   );
                 })}
               </div>
               {result.prediction===1&&!result.ckd_stage&&(
-                <div style={{marginTop:'.75rem',color:'#8BA0C8',fontSize:'.75rem',lineHeight:1.5}}>{result.stage_desc}</div>
+                <div style={{marginTop:'.75rem',color:'var(--text-secondary)',fontSize:'.75rem',lineHeight:1.5}}>{result.stage_desc}</div>
               )}
             </div>
           )}
@@ -636,16 +636,16 @@ export default function Predict(){
           </div>
 
           {/* What-if simulator */}
-          <div style={{background:'#0D1824',border:'1px solid #365362',borderRadius:10,padding:'1.5rem',marginBottom:'1.2rem'}}>
+          <div style={{background:'var(--surface)',border:'1px solid var(--border-strong)',borderRadius:10,padding:'1.5rem',marginBottom:'1.2rem'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:16,flexWrap:'wrap',marginBottom:'1.2rem'}}>
               <div>
-                <div style={{fontSize:'.68rem',color:'#43C6B5',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:6}}>Scenario analysis</div>
-                <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.15rem',color:'#E8EEFF',marginBottom:5}}>Test changes to selected values</h3>
-                <p style={{color:'#8BA0C8',fontSize:'.8rem',lineHeight:1.6,maxWidth:590}}>
+                <div style={{fontSize:'.68rem',color:'var(--accent)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:6}}>Scenario analysis</div>
+                <h3 style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.15rem',color:'var(--text)',marginBottom:5}}>Test changes to selected values</h3>
+                <p style={{color:'var(--text-secondary)',fontSize:'.8rem',lineHeight:1.6,maxWidth:590}}>
                   Adjust selected values to see how the prediction model responds. This creates a temporary scenario and does not change the original report.
                 </p>
               </div>
-              <span style={{fontSize:'.7rem',color:'#43C6B5',borderLeft:'2px solid #43C6B5',paddingLeft:8,whiteSpace:'nowrap',fontWeight:600}}>Temporary scenario</span>
+              <span style={{fontSize:'.7rem',color:'var(--accent)',borderLeft:'2px solid var(--accent)',paddingLeft:8,whiteSpace:'nowrap',fontWeight:600}}>Temporary scenario</span>
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem 1.5rem'}}>
@@ -654,8 +654,8 @@ export default function Predict(){
                 return(
                   <label key={field.key} style={{display:'block'}}>
                     <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:7}}>
-                      <span style={{fontSize:'.78rem',color:'#8BA0C8'}}>{field.label}</span>
-                      <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.75rem',color:'#E8EEFF'}}>{Number(value).toFixed(field.step<.1?2:field.step<1?1:0)} <span style={{color:'#4A5E80'}}>{field.unit}</span></span>
+                      <span style={{fontSize:'.78rem',color:'var(--text-secondary)'}}>{field.label}</span>
+                      <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'.75rem',color:'var(--text)'}}>{Number(value).toFixed(field.step<.1?2:field.step<1?1:0)} <span style={{color:'var(--text-muted)'}}>{field.unit}</span></span>
                     </div>
                     <input
                       type="range"
@@ -664,7 +664,7 @@ export default function Predict(){
                       step={field.step}
                       value={value}
                       onChange={e=>setSimValues(previous=>({...previous,[field.key]:Number(e.target.value)}))}
-                      style={{width:'100%',accentColor:'#43C6B5',cursor:'pointer'}}
+                      style={{width:'100%',accentColor:'var(--accent)',cursor:'pointer'}}
                     />
                   </label>
                 );
@@ -672,31 +672,31 @@ export default function Predict(){
             </div>
 
             <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',marginTop:'1.4rem'}}>
-              <button onClick={runSimulation} disabled={simLoading} style={{padding:'11px 16px',border:'1px solid #176B72',borderRadius:6,background:simLoading?'#172838':'#176B72',color:'#F4FBFB',fontWeight:600,fontSize:'.85rem',cursor:simLoading?'not-allowed':'pointer',transition:'background-color .2s'}}>
+              <button onClick={runSimulation} disabled={simLoading} style={{padding:'11px 16px',border:'1px solid var(--button-bg)',borderRadius:6,background:simLoading?'var(--surface-hover)':'var(--button-bg)',color:'#F4FBFB',fontWeight:600,fontSize:'.85rem',cursor:simLoading?'not-allowed':'pointer',transition:'background-color .2s'}}>
                 {simLoading?'Running scenario...':'Run Scenario →'}
               </button>
-              <span style={{color:'#4A5E80',fontSize:'.72rem'}}>Original report: {result.probability}% risk</span>
+              <span style={{color:'var(--text-muted)',fontSize:'.72rem'}}>Original report: {result.probability}% risk</span>
             </div>
 
-            {simError&&<div style={{marginTop:'1rem',color:'#FF4D6A',fontSize:'.8rem'}}>{simError}</div>}
+            {simError&&<div style={{marginTop:'1rem',color:'var(--risk-very-high)',fontSize:'.8rem'}}>{simError}</div>}
 
             {simResult&&(
-              <div style={{marginTop:'1.3rem',paddingTop:'1.2rem',borderTop:'1px solid #1E2247'}}>
+              <div style={{marginTop:'1.3rem',paddingTop:'1.2rem',borderTop:'1px solid var(--border)'}}>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.75rem'}}>
                   {[
-                    {label:'Original risk',value:`${result.probability}%`,color:'#8BA0C8'},
-                    {label:'Scenario risk',value:`${simResult.probability}%`,color:simResult.risk_color||'#43C6B5'},
-                    {label:'Change',value:`${simResult.probability-result.probability>0?'+':''}${(simResult.probability-result.probability).toFixed(1)} pts`,color:simResult.probability>result.probability?'#FF4D6A':'#00D4A8'},
+                    {label:'Original risk',value:`${result.probability}%`,color:'var(--text-secondary)'},
+                    {label:'Scenario risk',value:`${simResult.probability}%`,color:simResult.risk_color||'var(--accent)'},
+                    {label:'Change',value:`${simResult.probability-result.probability>0?'+':''}${(simResult.probability-result.probability).toFixed(1)} pts`,color:simResult.probability>result.probability?'var(--risk-very-high)':'var(--status-no-ckd)'},
                   ].map((item)=>(
-                    <div key={item.label} style={{background:'rgba(7,8,26,.7)',border:'1px solid #1E2247',borderRadius:10,padding:'11px',textAlign:'center'}}>
-                      <div style={{fontSize:'.66rem',color:'#4A5E80',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:5}}>{item.label}</div>
+                    <div key={item.label} style={{background:'var(--surface-inset)',border:'1px solid var(--border)',borderRadius:10,padding:'11px',textAlign:'center'}}>
+                      <div style={{fontSize:'.66rem',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:5}}>{item.label}</div>
                       <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:'1.25rem',fontWeight:800,color:item.color}}>{item.value}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginTop:'.9rem',flexWrap:'wrap'}}>
-                  <span style={{color:'#8BA0C8',fontSize:'.8rem'}}>Scenario classification: <strong style={{color:simResult.risk_color||'#E8EEFF'}}>{simResult.risk_level}</strong></span>
-                  <span style={{color:'#8BA0C8',fontSize:'.8rem'}}>Estimated stage: <strong style={{color:'#E8EEFF'}}>{simResult.ckd_stage||simResult.stage_desc||'Normal range'}</strong></span>
+                  <span style={{color:'var(--text-secondary)',fontSize:'.8rem'}}>Scenario classification: <strong style={{color:simResult.risk_color||'var(--text)'}}>{simResult.risk_level}</strong></span>
+                  <span style={{color:'var(--text-secondary)',fontSize:'.8rem'}}>Estimated stage: <strong style={{color:'var(--text)'}}>{simResult.ckd_stage||simResult.stage_desc||'Normal range'}</strong></span>
                 </div>
               </div>
             )}
@@ -704,14 +704,14 @@ export default function Predict(){
 
           {/* Early warnings */}
           {result.early_warnings?.length>0&&(
-            <div style={{background:'#0D1824',border:'1px solid rgba(245,166,35,.22)',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
-              <div style={{fontSize:'.68rem',color:'#F5A623',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>🚦 Early Detection Alerts</div>
+            <div style={{background:'var(--surface)',border:'1px solid rgba(245,166,35,.22)',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
+              <div style={{fontSize:'.68rem',color:'var(--risk-moderate)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'1rem'}}>🚦 Early Detection Alerts</div>
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
                 {result.early_warnings.map((w,i)=>{
                   const wc={
-                    alert:  {bg:'rgba(91,127,255,.08)',  border:'rgba(91,127,255,.22)',  c:'#5B7FFF'},
-                    warning:{bg:'rgba(245,166,35,.08)',  border:'rgba(245,166,35,.22)',  c:'#F5A623'},
-                    danger: {bg:'rgba(255,77,106,.08)',  border:'rgba(255,77,106,.22)',  c:'#FF4D6A'},
+                    alert:  {bg:'rgba(33,103,93,.08)',  border:'rgba(33,103,93,.22)',  c:'var(--accent)'},
+                    warning:{bg:'rgba(245,166,35,.08)',  border:'rgba(245,166,35,.22)',  c:'var(--risk-moderate)'},
+                    danger: {bg:'rgba(255,77,106,.08)',  border:'rgba(255,77,106,.22)',  c:'var(--risk-very-high)'},
                   };
                   const t=wc[w.level]||wc.alert;
                   return<div key={i} style={{background:t.bg,border:`1px solid ${t.border}`,borderRadius:9,padding:'10px 14px',animation:`fadeUp .4s ease ${i*80}ms both`}}><span style={{color:t.c,fontSize:'.84rem',lineHeight:1.6}}>{w.msg}</span></div>;
@@ -721,10 +721,10 @@ export default function Predict(){
           )}
 
           {/* Recommendations */}
-          <div style={{background:'#0D1824',border:'1px solid #263949',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
+          <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'1.2rem',marginBottom:'1.2rem'}}>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'1rem'}}>
-              <span style={{fontSize:'.68rem',color:'#8BA0C8',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>💡 Health Recommendations</span>
-              {result.is_pediatric&&<span style={{fontSize:'.68rem',background:'rgba(67,198,181,.08)',color:'#43C6B5',padding:'3px 7px',borderRadius:4,border:'1px solid rgba(67,198,181,.2)',fontWeight:600}}>Pediatric</span>}
+              <span style={{fontSize:'.68rem',color:'var(--text-secondary)',fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase'}}>💡 Health Recommendations</span>
+              {result.is_pediatric&&<span style={{fontSize:'.68rem',background:'rgba(67,198,181,.08)',color:'var(--accent)',padding:'3px 7px',borderRadius:4,border:'1px solid rgba(67,198,181,.2)',fontWeight:600}}>Pediatric</span>}
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {result.recommendations.map((r,i)=>{
@@ -734,7 +734,7 @@ export default function Predict(){
                     <span style={{fontSize:'1.2rem',lineHeight:1,flexShrink:0}}>{r.icon}</span>
                     <div>
                       <div style={{color:c.text,fontWeight:600,fontSize:'.88rem',marginBottom:3}}>{r.title}</div>
-                      <div style={{color:'#8BA0C8',fontSize:'.82rem',lineHeight:1.55}}>{r.desc}</div>
+                      <div style={{color:'var(--text-secondary)',fontSize:'.82rem',lineHeight:1.55}}>{r.desc}</div>
                     </div>
                   </div>
                 );
@@ -744,20 +744,20 @@ export default function Predict(){
 
           <div style={{display:'flex',justifyContent:'center',marginBottom:'1rem'}}>
             <button onClick={downloadReport} style={{
-              background:'#176B72',
-              border:'1px solid #176B72',borderRadius:6,padding:'12px 20px',
+              background:'var(--button-bg)',
+              border:'1px solid var(--button-bg)',borderRadius:6,padding:'12px 20px',
               color:'#fff',fontWeight:700,fontSize:'.95rem',cursor:'pointer',
               boxShadow:'none',
               transition:'background-color .2s',
             }}
-              onMouseOver={e=>{e.currentTarget.style.background='#1B7C82';}}
-              onMouseOut={e=>{e.currentTarget.style.background='#176B72';}}
+              onMouseOver={e=>{e.currentTarget.style.background='var(--button-hover)';}}
+              onMouseOut={e=>{e.currentTarget.style.background='var(--button-bg)';}}
             >
               ⬇ Download PDF Report
             </button>
           </div>
 
-          <div style={{textAlign:'center',color:'#4A5E80',fontSize:'.75rem',padding:'.5rem',lineHeight:1.7}}>
+          <div style={{textAlign:'center',color:'var(--text-muted)',fontSize:'.75rem',padding:'.5rem',lineHeight:1.7}}>
             ⚠️ NephroScan is a research and educational tool only. Always consult a qualified nephrologist or pediatric specialist before making any medical decisions.
           </div>
         </div>
