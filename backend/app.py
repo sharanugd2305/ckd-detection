@@ -20,7 +20,15 @@ DATASET_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', 'data', 'ckd_1659.cs
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 app = Flask(__name__)
-CORS(app)
+CORS_ALLOWED_ORIGINS = [
+    origin.strip().rstrip('/')
+    for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000',
+    ).split(',')
+    if origin.strip()
+]
+CORS(app, origins=CORS_ALLOWED_ORIGINS)
 
 DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{os.path.join(BASE_DIR, 'nephroscan.db')}")
 if DATABASE_URL.startswith('postgres://'):

@@ -69,8 +69,7 @@ Open two terminals from the project root.
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-db.txt
+python -m pip install -r requirements-deploy.txt
 python app.py
 ```
 
@@ -87,6 +86,33 @@ npm start
 ```
 
 The application opens at `http://localhost:3000`. Keep the backend running while using the app.
+
+## Deploying with Vercel and Render
+
+The app has not been deployed yet. These steps deploy the React frontend to Vercel and the Flask API to Render.
+
+### Deploy the backend to Render
+
+1. Push the project to GitHub. Include `backend/model/xgb_model.pkl` and `backend/model/scaler.pkl`; these are required by the prediction API.
+2. In Render, create a **Web Service** from the GitHub repository.
+3. Set **Root Directory** to `backend`.
+4. Set the **Build Command** to `pip install -r requirements-deploy.txt`.
+5. Set the **Start Command** to `gunicorn --bind 0.0.0.0:$PORT app:app`.
+6. Deploy the service and copy its public URL.
+7. In the Render service environment settings, set `CORS_ALLOWED_ORIGINS` to the Vercel site URL after creating the frontend deployment. For local development, the default allows `localhost:3000`.
+
+For persistent signed-in prediction history, configure a PostgreSQL database and set `DATABASE_URL` in Render. The default SQLite database is suitable for local development, but its data may not persist across hosted service restarts or redeployments. Set `CLERK_SECRET_KEY` only if Clerk authentication is enabled.
+
+### Deploy the frontend to Vercel
+
+1. In Vercel, import the same GitHub repository.
+2. Set the **Root Directory** to `frontend`. Vercel should detect the Create React App build settings; use `npm run build` and `build` as the output directory if prompted.
+3. Add the environment variable `REACT_APP_API_URL` with the public Render service URL (for example, `https://your-service.onrender.com`, without a trailing slash).
+4. If Clerk sign-in is enabled, add `REACT_APP_CLERK_PUBLISHABLE_KEY` to the Vercel project and `CLERK_SECRET_KEY` to the Render service.
+5. Deploy the frontend. Copy its public URL, set that URL as `CORS_ALLOWED_ORIGINS` in Render, and redeploy/restart the backend.
+6. Test the home page, model comparison, and a prediction. Test dashboard history only if PostgreSQL and Clerk are configured.
+
+After changing frontend environment variables, trigger a new Vercel deployment so the values are included in the frontend build. Never commit secret keys or real patient information to GitHub.
 
 ## API overview
 

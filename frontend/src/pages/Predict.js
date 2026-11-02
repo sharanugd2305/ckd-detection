@@ -2,6 +2,7 @@ import React,{useState,useMemo,useEffect} from 'react';
 import axios from 'axios';
 import {SignedIn,SignedOut,useAuth} from '@clerk/clerk-react';
 import { downloadAssessmentReport } from '../utils/assessmentReport';
+import API_URL from '../utils/api';
 
 const FIELDS=[
   {key:'Age',                        label:'Age',                           unit:'years',  min:0,  max:120,step:1,   normal:'Any age',         desc:'Age-adjusted thresholds applied automatically'},
@@ -139,7 +140,7 @@ export default function Predict(){
   const [modelInfo,setModelInfo]=useState(null);
 
   useEffect(()=>{
-    axios.get('http://localhost:5000/model-info')
+    axios.get(`${API_URL}/model-info`)
       .then(({data})=>setModelInfo(data))
       .catch(()=>setModelInfo(null));
   },[]);
@@ -186,7 +187,7 @@ export default function Predict(){
     try{
       const token=isSignedIn?await getToken():null;
       const headers=token?{Authorization:`Bearer ${token}`}:{};
-      const res = await axios.post('http://localhost:5000/predict',buildPayload(form),{headers});
+      const res = await axios.post(`${API_URL}/predict`,buildPayload(form),{headers});
       setResult(res.data);
       setSimResult(null);
       setSimValues(Object.fromEntries(SIMULATOR_FIELDS.map(field=>[
@@ -208,7 +209,7 @@ export default function Predict(){
       const headers=token?{Authorization:`Bearer ${token}`}:{};
       const scenarioPayload=buildPayload(form,simValues);
       scenarioPayload._save_history=false;
-      const res=await axios.post('http://localhost:5000/predict',scenarioPayload,{headers});
+      const res=await axios.post(`${API_URL}/predict`,scenarioPayload,{headers});
       setSimResult(res.data);
     }catch(error){
       setSimError(error.response?.status===401?'Your Clerk session is invalid or expired. Please sign in again.':'Simulation unavailable. Make sure Flask is running on port 5000.');

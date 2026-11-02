@@ -3,8 +3,8 @@ import axios from 'axios';
 import { Link, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-react';
 import { downloadAssessmentReport } from '../utils/assessmentReport';
+import API_URL from '../utils/api';
 
-const API_URL = 'http://localhost:5000';
 const FIELD_LABELS = {
   Age: 'Age', BMI: 'BMI', HbA1c: 'HbA1c', SerumCreatinine: 'Serum creatinine',
   BUNLevels: 'BUN', GFR: 'GFR', HemoglobinLevels: 'Hemoglobin',

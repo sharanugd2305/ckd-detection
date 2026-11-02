@@ -1,0 +1,13 @@
+clerk-backend-api
+flask
+flask-cors
+gunicorn
+imbalanced-learn
+joblib
+numpy
+pandas
+python-dotenv
+scikit-learn
+SQLAlchemy
+xgboost
+psycopg[binary]

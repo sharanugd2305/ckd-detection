@@ -33,6 +33,8 @@ backend/model/*.joblib
 *.onnx
 *.pt
 *.bin
+!backend/model/xgb_model.pkl
+!backend/model/scaler.pkl
 
 # Jupyter
 *.ipynb_checkpoints/

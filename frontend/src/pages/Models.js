@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_URL from '../utils/api';
 
 const MODEL_DETAILS = {
   'XGBoost': {
@@ -46,7 +47,7 @@ export default function Models() {
     setLoading(true);
     setError('');
 
-    axios.get('http://localhost:5000/model-info')
+    axios.get(`${API_URL}/model-info`)
       .then(({ data }) => {
         if (!active) return;
         const ranking = Array.isArray(data?.ranking) ? data.ranking : [];
