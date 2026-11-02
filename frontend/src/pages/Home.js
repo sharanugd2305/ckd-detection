@@ -1,350 +1,225 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import kidneyImg from '../images/kidney.jpg';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import kidneyImage from '../images/kidney.jpg';
+import './Home.css';
 
-/* ── Feature card ── */
-function FCard({ icon, title, body, accent = '#2D6AFF', delay = 0 }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: hov ? '#111D33' : '#0D1526',
-        border: `1px solid ${hov ? '#1F2F50' : '#172240'}`,
-        borderRadius: 16, padding: '1.6rem',
-        transition: 'all .25s ease',
-        transform: hov ? 'translateY(-5px)' : 'none',
-        boxShadow: hov ? '0 20px 40px rgba(0,0,0,.4)' : 'none',
-        animation: `fadeUp .5s ease ${delay}ms both`,
-        cursor: 'default',
-      }}
-    >
-      <div style={{
-        width: 44, height: 44, borderRadius: 10, marginBottom: '1.1rem',
-        background: `${accent}18`, border: `1px solid ${accent}30`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '1.4rem', transition: 'transform .25s',
-        transform: hov ? 'scale(1.1)' : 'scale(1)',
-      }}>{icon}</div>
-      <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '.95rem', fontWeight: 600, color: '#DCE8FF', marginBottom: 6 }}>{title}</div>
-      <div style={{ color: '#7A92BC', fontSize: '.83rem', lineHeight: 1.65 }}>{body}</div>
-    </div>
-  );
+const FEATURES = [
+  {
+    icon: '◉',
+    title: 'Age-aware reference ranges',
+    text: 'Clinical references are considered alongside the project dataset age span of 20–90 years.',
+    tone: 'sage',
+  },
+  {
+    icon: '↗',
+    title: 'A clear risk summary',
+    text: 'Review a CKD prediction with its probability, classification, and supporting context.',
+    tone: 'aqua',
+  },
+  {
+    icon: '⌁',
+    title: 'GFR-based stage context',
+    text: 'See the result alongside the project’s GFR-based stage reference.',
+    tone: 'blue',
+  },
+  {
+    icon: '!',
+    title: 'Early warning context',
+    text: 'Review alerts raised by the assessment when clinical values warrant attention.',
+    tone: 'peach',
+  },
+  {
+    icon: '+',
+    title: 'Practical next steps',
+    text: 'Explore evidence-informed recommendations included with an assessment.',
+    tone: 'sage',
+  },
+  {
+    icon: '⌘',
+    title: 'Four-model comparison',
+    text: 'Explore Logistic Regression, Random Forest, SVM, and XGBoost.',
+    tone: 'blue',
+  },
+];
+
+const STEPS = [
+  {
+    number: '01',
+    title: 'Enter clinical values',
+    text: 'Provide the available patient and laboratory details in the assessment form.',
+  },
+  {
+    number: '02',
+    title: 'Review the model estimate',
+    text: 'The service returns a CKD prediction and supporting risk information.',
+  },
+  {
+    number: '03',
+    title: 'Explore the report',
+    text: 'Review the stage context, alerts, recommendations, and downloadable report.',
+  },
+];
+
+const MODELS = [
+  { initials: 'LR', name: 'Logistic Regression', description: 'A linear classification baseline.' },
+  { initials: 'RF', name: 'Random Forest', description: 'An ensemble of decision trees.' },
+  { initials: 'SVM', name: 'SVM (RBF)', description: 'A support-vector classifier with an RBF kernel.' },
+  { initials: 'XGB', name: 'XGBoost', description: 'The calibrated model used by the prediction endpoint.' },
+];
+
+const STAGES = [
+  { name: 'Stage 1', gfr: 'GFR ≥ 90', description: 'Normal / high', color: '#31866B' },
+  { name: 'Stage 2', gfr: 'GFR 60–89', description: 'Mild', color: '#4D9C7D' },
+  { name: 'Stage 3a', gfr: 'GFR 45–59', description: 'Mild–Moderate', color: '#A87519' },
+  { name: 'Stage 3b', gfr: 'GFR 30–44', description: 'Moderate', color: '#B56525' },
+  { name: 'Stage 4', gfr: 'GFR 15–29', description: 'Severe', color: '#B94750' },
+  { name: 'Stage 5', gfr: 'GFR < 15', description: 'Kidney Failure', color: '#A52D43' },
+];
+
+function Eyebrow({ children }) {
+  return <p className="home-eyebrow">{children}</p>;
 }
 
-/* ── Age badge ── */
-function AgeBadge({ emoji, label, color }) {
-  const [hov, setHov] = useState(false);
+function FeatureCard({ icon, title, text, tone }) {
   return (
-    <span
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '6px 14px', borderRadius: 999,
-        background: hov ? `${color}22` : `${color}12`,
-        border: `1px solid ${color}${hov ? '55' : '28'}`,
-        color: hov ? color : '#7A92BC',
-        fontSize: '.8rem', fontWeight: 500,
-        transition: 'all .2s', cursor: 'default',
-      }}
-    >{emoji} {label}</span>
+    <article className="home-feature-card">
+      <span className={`home-icon home-icon-${tone}`} aria-hidden="true">{icon}</span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
   );
 }
 
 export default function Home() {
-  const nav = useNavigate();
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 40,
-        y: (e.clientY / window.innerHeight - 0.5) * 40
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const features = [
-    { icon: '🧬', title: 'Age-Aware Thresholds', body: 'Clinical reference ranges are tuned to the project dataset age span of 20–90 years, covering young adults through seniors.', accent: '#2D6AFF', delay: 0 },
-    { icon: '⚡', title: 'Instant Risk Scoring', body: 'Trained ML models deliver a precise CKD probability score with confidence metrics in under a second.', accent: '#00E5B4', delay: 80 },
-    { icon: '📊', title: 'CKD Stage Estimation', body: 'GFR-based staging maps every result to Stage 1–5 using established clinical thresholds.', accent: '#9B6DFF', delay: 160 },
-    { icon: '🚦', title: 'Early Detection Alerts', body: 'Specialized warning system for high-risk adult groups, including young adults and older patients with family history.', accent: '#FFAA2C', delay: 240 },
-    { icon: '💊', title: 'Personalized Guidance', body: 'Evidence-based health recommendations tailored to each patient\'s specific lab values, age group, and identified risk factors.', accent: '#00E5B4', delay: 320 },
-    { icon: '🔬', title: 'Leakage-Safe Multi-Model Ensemble', body: 'Logistic Regression, Random Forest, SVM, and XGBoost — all trained with train-only scaling and SMOTENC balancing on clinically validated data.', accent: '#2D6AFF', delay: 400 },
-  ];
-
-  const ages = [
-    { emoji: '👨', label: 'Young Adult', color: '#9B6DFF' },
-    { emoji: '🧔', label: 'Adult', color: '#2D6AFF' },
-    { emoji: '👴', label: 'Senior', color: '#00E5B4' },
-    { emoji: '📊', label: '20–90 yrs', color: '#FFAA2C' },
-  ];
-
-  const stages = [
-    { label: 'Stage 1', range: 'GFR ≥ 90', desc: 'Normal / high', color: '#00E5B4', w: '16%' },
-    { label: 'Stage 2', range: 'GFR 60–89', desc: 'Mild', color: '#40CDA3', w: '16%' },
-    { label: 'Stage 3a', range: 'GFR 45–59', desc: 'Mild–Moderate', color: '#FFAA2C', w: '20%' },
-    { label: 'Stage 3b', range: 'GFR 30–44', desc: 'Moderate', color: '#FF8C42', w: '18%' },
-    { label: 'Stage 4', range: 'GFR 15–29', desc: 'Severe', color: '#FF5E5B', w: '18%' },
-    { label: 'Stage 5', range: 'GFR < 15', desc: 'Kidney Failure', color: '#FF3D57', w: '12%' },
-  ];
+  const navigate = useNavigate();
 
   return (
-    <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 2rem 6rem', position: 'relative' }}>
-      <style>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes breathe {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.04); }
-          100% { transform: scale(1); }
-        }
-        @keyframes pulseGlow {
-          0% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.1); }
-          100% { opacity: 0.6; transform: scale(1); }
-        }
-      `}</style>
-
-      {/* ── Background Global Glows & Image ── */}
-      <div style={{
-        position: 'fixed', top: -150, left: -150, width: 500, height: 500,
-        background: 'radial-gradient(circle,rgba(45,106,255,.06) 0%,transparent 70%)',
-        pointerEvents: 'none', borderRadius: '50%', zIndex: -1,
-        transform: `translate(${mousePos.x * -2}px, ${mousePos.y * -2}px)`,
-        transition: 'transform 0.2s ease-out',
-        animation: 'pulseGlow 4s ease-in-out infinite'
-      }} />
-      <div style={{
-        position: 'fixed', bottom: -150, right: -150, width: 600, height: 600,
-        background: 'radial-gradient(circle,rgba(0,229,180,.05) 0%,transparent 70%)',
-        pointerEvents: 'none', borderRadius: '50%', zIndex: -1,
-        transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)`,
-        transition: 'transform 0.2s ease-out',
-        animation: 'pulseGlow 5s ease-in-out infinite reverse'
-      }} />
-      {/* ── Kidney Background ── */}
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundImage: `url(${kidneyImg})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center center',
-        backgroundSize: 'cover',
-        opacity: 0.25,
-        pointerEvents: 'none',
-        filter: 'saturate(0.9) brightness(1.05)',
-        zIndex: -1,
-      }} />
-
-      {/* ── Hero ── */}
-      <div style={{ paddingTop: '5rem', paddingBottom: '4rem', textAlign: 'center', position: 'relative' }}>
-
-        {/* Background glows */}
-        <div style={{
-          position: 'absolute', top: 0, left: '20%', width: 500, height: 400,
-          transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
-          transition: 'transform 0.15s ease-out',
-          pointerEvents: 'none'
-        }}>
-          <div style={{
-            width: '100%', height: '100%',
-            background: 'radial-gradient(circle,rgba(45,106,255,.09) 0%,transparent 70%)',
-            borderRadius: '50%',
-            animation: 'float 6s ease-in-out infinite'
-          }} />
-        </div>
-        <div style={{
-          position: 'absolute', top: '15%', right: '10%', width: 350, height: 350,
-          transform: `translate(${mousePos.x * -1.2}px, ${mousePos.y * -1.2}px)`,
-          transition: 'transform 0.15s ease-out',
-          pointerEvents: 'none'
-        }}>
-          <div style={{
-            width: '100%', height: '100%',
-            background: 'radial-gradient(circle,rgba(0,229,180,.07) 0%,transparent 70%)',
-            borderRadius: '50%',
-            animation: 'float 8s ease-in-out infinite reverse'
-          }} />
-        </div>
-        <div style={{
-          position: 'absolute', top: '40%', left: '45%', width: 400, height: 400,
-          transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)`,
-          transition: 'transform 0.15s ease-out',
-          pointerEvents: 'none'
-        }}>
-          <div style={{
-            width: '100%', height: '100%',
-            background: 'radial-gradient(circle,rgba(155,109,255,.05) 0%,transparent 70%)',
-            borderRadius: '50%',
-            animation: 'float 10s ease-in-out infinite 1s'
-          }} />
-        </div>
-
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '5px 14px', borderRadius: 999, marginBottom: '1.2rem',
-            background: 'rgba(45,106,255,.08)',
-            border: '1px solid rgba(45,106,255,.2)',
-            animation: 'fadeUp .4s ease',
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00E5B4', display: 'inline-block', animation: 'blink 1.5s ease infinite' }} />
-            <span style={{ fontSize: '.78rem', color: '#00E5B4', fontWeight: 500, letterSpacing: '.04em' }}>LIVE</span>
-          </div>
-
-          <h1 style={{
-            fontFamily: 'Space Grotesk,sans-serif',
-            fontSize: 'clamp(2.2rem,5.5vw,3.8rem)',
-            fontWeight: 800, lineHeight: 1.08, letterSpacing: '-.035em',
-            marginBottom: '1.4rem',
-            animation: 'fadeUp .5s ease .08s both',
-          }}>
-            <span style={{
-              backgroundImage: 'linear-gradient(135deg,#2D6AFF 20%,#00E5B4 80%)',
-              backgroundSize: '200% 200%',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              animation: 'gradShift 4s ease infinite',
-            }}>Detect Kidney Disease</span>
-          </h1>
-
-          <p style={{
-            color: '#7A92BC', fontSize: '1.05rem', maxWidth: 520, margin: '0 auto 2.4rem',
-            lineHeight: 1.75, animation: 'fadeUp .5s ease .16s both',
-          }}>
-            AI-powered CKD risk assessment for every age group — from newborns to seniors. Clinical values in, instant diagnosis out.
+    <main className="home-page">
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <Eyebrow>Kidney health, made clearer</Eyebrow>
+          <h1>Chronic kidney disease<br /><span>detection, made clearer.</span></h1>
+          <p className="home-hero-description">
+            NephroScan is an academic CKD assessment project built around clinical and
+            demographic data. Explore a model-generated estimate with its supporting context.
           </p>
+          <div className="home-hero-actions">
+            <button type="button" className="home-button home-button-primary" onClick={() => navigate('/predict')}>
+              Start an assessment <span aria-hidden="true">→</span>
+            </button>
+            <Link className="home-button home-button-secondary" to="/about">Explore the methodology</Link>
+          </div>
+          <p className="home-hero-note">Research and educational use only · Not a medical diagnosis</p>
+        </div>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', animation: 'fadeUp .5s ease .24s both' }}>
-            <button onClick={() => nav('/predict')} style={{
-              padding: '13px 32px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg,#2D6AFF,#00E5B4)',
-              color: '#fff', fontFamily: 'Space Grotesk,sans-serif',
-              fontSize: '.95rem', fontWeight: 700, letterSpacing: '-.01em',
-              boxShadow: '0 8px 28px rgba(45,106,255,.35)',
-              transition: 'all .2s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 14px 36px rgba(45,106,255,.5)'; }}
-              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(45,106,255,.35)'; }}
-            >Start Analysis →</button>
-            <button onClick={() => nav('/about')} style={{
-              padding: '13px 28px', borderRadius: 10, border: '1px solid #172240',
-              background: 'transparent', color: '#7A92BC', fontSize: '.95rem', cursor: 'pointer',
-              transition: 'all .2s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.color = '#DCE8FF'; e.currentTarget.style.borderColor = '#1F2F50'; }}
-              onMouseOut={e => { e.currentTarget.style.color = '#7A92BC'; e.currentTarget.style.borderColor = '#172240'; }}
-            >View Methodology</button>
+        <div className="home-visual">
+          <div className="home-visual-glow" />
+          <div className="home-orbit home-orbit-one" />
+          <div className="home-orbit home-orbit-two" />
+          <img
+            className="home-kidney-art"
+            src={kidneyImage}
+            alt="Luminous illustration of both kidneys and their connecting vessels"
+          />
+          <div className="home-visual-caption">
+            <span className="home-caption-dot" />
+            <span><strong>Clinical context</strong><small>Designed around 13 input features</small></span>
+          </div>
+          <div className="home-visual-tag">CKD · 20–90 years</div>
+        </div>
+      </section>
+
+      <section className="home-age-strip" aria-label="Dataset age range">
+        <div className="home-age-mark" aria-hidden="true">20–90</div>
+        <div className="home-age-copy">
+          <Eyebrow>Dataset scope</Eyebrow>
+          <h2>Built around adult CKD data</h2>
+          <p>The project dataset includes adults aged 20–90, grouped into young adult, adult, and senior ranges.</p>
+        </div>
+        <div className="home-age-tags">
+          <span>Young adult</span><span>Adult</span><span>Senior</span>
+        </div>
+      </section>
+
+      <section className="home-section" id="capabilities">
+        <div className="home-section-heading">
+          <div><Eyebrow>Thoughtful by design</Eyebrow><h2>Assessment, with context</h2></div>
+          <p>Explore the information and tools included in the NephroScan workflow.</p>
+        </div>
+        <div className="home-feature-grid">
+          {FEATURES.map((feature) => <FeatureCard key={feature.title} {...feature} />)}
+        </div>
+      </section>
+
+      <section className="home-section home-process-section" id="how-it-works">
+        <div className="home-section-heading">
+          <div><Eyebrow>A straightforward workflow</Eyebrow><h2>How it works</h2></div>
+          <p>From available clinical inputs to a report you can review.</p>
+        </div>
+        <div className="home-steps">
+          {STEPS.map((step) => (
+            <article className="home-step" key={step.number}>
+              <span className="home-step-number">{step.number}</span>
+              <div><h3>{step.title}</h3><p>{step.text}</p></div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-section" id="models">
+        <div className="home-section-heading">
+          <div><Eyebrow>Model transparency</Eyebrow><h2>Four classifiers, one comparison</h2></div>
+          <Link className="home-text-link" to="/models">View model results <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="home-model-grid">
+          {MODELS.map((model, index) => (
+            <article className={`home-model-card${index === 3 ? ' home-model-featured' : ''}`} key={model.initials}>
+              <span className="home-model-initials">{model.initials}</span>
+              <div><h3>{model.name}</h3><p>{model.description}</p></div>
+              {index === 3 && <span className="home-model-label">Prediction endpoint</span>}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-stage-panel" id="stages">
+        <div className="home-stage-intro">
+          <Eyebrow>Reference guide</Eyebrow>
+          <h2>GFR-based CKD staging</h2>
+          <p>Use this visual reference to understand how GFR ranges correspond to the stage labels shown in the project.</p>
+          <div className="home-stage-bar" aria-hidden="true">
+            {STAGES.map((stage) => <span key={stage.name} style={{ backgroundColor: stage.color }} />)}
           </div>
         </div>
-      </div>
-
-      {/* ── Dataset age banner ── */}
-      <div style={{
-        background: '#0D1526', border: '1px solid #172240', borderRadius: 18,
-        padding: '1.8rem 2rem', marginBottom: '4rem',
-        animation: 'fadeUp .5s ease .1s both',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 240 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5B4', display: 'inline-block', animation: 'blink 2s ease infinite' }} />
-              <span style={{ fontSize: '.72rem', color: '#00E5B4', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase' }}>Age Range</span>
+        <div className="home-stage-list">
+          {STAGES.map((stage) => (
+            <div className="home-stage-row" key={stage.name}>
+              <span className="home-stage-dot" style={{ backgroundColor: stage.color }} />
+              <strong>{stage.name}</strong><code>{stage.gfr}</code><span>{stage.description}</span>
             </div>
-            <h3 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.05rem', fontWeight: 700, color: '#DCE8FF', marginBottom: 6 }}>
-              Adult CKD Data (Ages 20-90)
-            </h3>
-            <p style={{ color: '#7A92BC', fontSize: '.85rem', lineHeight: 1.65, maxWidth: 380 }}>
-              Patients are grouped into young adult, adult, and senior categories based on an age range of 20 to 90 years.
-            </p>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignContent: 'flex-start' }}>
-            {ages.map((a, i) => <AgeBadge key={i} {...a} />)}
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* ── Features ── */}
-      <div style={{ marginBottom: '4rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ color: '#2D6AFF', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 8 }}>Capabilities</div>
-          <h2 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.75rem', fontWeight: 800, color: '#DCE8FF', letterSpacing: '-.025em' }}>
-            What makes NephroScan different
-          </h2>
+      <section className="home-about-panel" id="about">
+        <div className="home-about-icon" aria-hidden="true">✦</div>
+        <div>
+          <Eyebrow>About NephroScan</Eyebrow>
+          <h2>A project for learning and exploration</h2>
+          <p>Read about the dataset, preprocessing pipeline, model evaluation, and clinical features behind this academic project.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
-          {features.map((f, i) => <FCard key={i} {...f} />)}
-        </div>
-      </div>
+        <Link className="home-button home-button-secondary" to="/about">About the project <span aria-hidden="true">→</span></Link>
+      </section>
 
-      {/* ── CKD Stage reference ── */}
-      <div style={{ background: '#0D1526', border: '1px solid #172240', borderRadius: 18, padding: '2rem', marginBottom: '4rem' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <h3 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.1rem', fontWeight: 700, color: '#DCE8FF', marginBottom: 8 }}>GFR-based CKD staging</h3>
-            <p style={{ color: '#7A92BC', fontSize: '.85rem', lineHeight: 1.65, marginBottom: '1.2rem', maxWidth: 380 }}>
-              Glomerular Filtration Rate is the gold standard for measuring kidney function. NephroScan maps every result directly onto the clinical staging framework.
-            </p>
-            {/* Stage color bar */}
-            <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 8, marginBottom: 8 }}>
-              {stages.map((s, i) => <div key={i} style={{ width: s.w, background: s.color }} />)}
-            </div>
-            <div style={{ display: 'flex', gap: '2px' }}>
-              {stages.map((s, i) => <div key={i} style={{ width: s.w, fontSize: '.62rem', color: s.color, overflow: 'hidden', whiteSpace: 'nowrap', paddingRight: 4 }}>{s.label}</div>)}
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 260 }}>
-            {stages.map((s, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '9px 12px', borderRadius: 8,
-                background: `${s.color}0C`, border: `1px solid ${s.color}22`,
-                transition: 'transform .2s', cursor: 'default',
-              }}
-                onMouseOver={e => e.currentTarget.style.transform = 'translateX(4px)'}
-                onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}
-              >
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                <span style={{ color: s.color, fontWeight: 600, fontSize: '.8rem', minWidth: 72 }}>{s.label}</span>
-                <span style={{ fontFamily: 'JetBrains Mono,monospace', color: '#3A506A', fontSize: '.72rem' }}>{s.range}</span>
-                <span style={{ color: '#7A92BC', fontSize: '.75rem', marginLeft: 'auto' }}>{s.desc}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bottom CTA ── */}
-      <div style={{
-        background: 'linear-gradient(135deg,rgba(45,106,255,.1),rgba(0,229,180,.07))',
-        border: '1px solid rgba(45,106,255,.2)',
-        borderRadius: 20, padding: '3rem', textAlign: 'center',
-      }}>
-        <h2 style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.9rem', fontWeight: 800, color: '#DCE8FF', letterSpacing: '-.025em', marginBottom: '1rem' }}>
-          Ready to run an analysis?
-        </h2>
-        <p style={{ color: '#7A92BC', fontSize: '.95rem', marginBottom: '2rem', lineHeight: 1.65 }}>
-          Enter any patient's clinical values and receive an instant, stage-aware CKD risk report.
-        </p>
-        <button onClick={() => nav('/predict')} style={{
-          padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg,#2D6AFF,#00E5B4)',
-          color: '#fff', fontFamily: 'Space Grotesk,sans-serif',
-          fontSize: '1rem', fontWeight: 700, letterSpacing: '-.01em',
-          boxShadow: '0 8px 28px rgba(45,106,255,.3)',
-          transition: 'all .2s',
-        }}
-          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(45,106,255,.45)'; }}
-          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(45,106,255,.3)'; }}
-        >Start CKD Analysis →</button>
-      </div>
-    </div>
+      <footer className="home-footer">
+        <Link className="home-footer-brand" to="/">NephroScan<span>CKD detection project</span></Link>
+        <nav className="home-footer-links" aria-label="Footer navigation">
+          <Link to="/predict">Assessment</Link>
+          <Link to="/models">Models</Link>
+          <Link to="/about">About</Link>
+        </nav>
+        <p>For research and educational use only. Not a medical diagnosis.</p>
+      </footer>
+    </main>
   );
 }
