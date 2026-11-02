@@ -123,10 +123,3 @@ python train_model.py
 ```
 
 Training reads `data/ckd_1659.csv` and writes model files under `backend/model/`.
-
-## Limitations and responsible use
-
-- Model estimates reflect the available dataset and its limitations; they may not generalize to other populations or clinical settings.
-- A model probability is not the same as a diagnosis, an individual's clinical probability, or a direct measurement of kidney function.
-- CKD stage information shown by the app is contextual and cannot establish a clinical stage on its own. Diagnosis and staging require appropriate clinical assessment.
-- Consult a qualified healthcare professional about symptoms, test results, or treatment decisions.
