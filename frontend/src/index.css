@@ -3,28 +3,28 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg: #101922;
-  --surface: #17232E;
-  --surface-raised: #1E2D38;
-  --surface-inset: #131F28;
-  --surface-hover: #263743;
-  --border: #354752;
-  --border-soft: #2A3B46;
-  --border-strong: #536773;
-  --text: #F2F6F8;
-  --text-secondary: #CCD7DE;
-  --text-muted: #A7B6C0;
-  --accent: #72C8B5;
-  --accent-hover: #8AD8C8;
+  --bg: #E8F0E8;
+  --surface: #F5F8F2;
+  --surface-raised: #F1F7F1;
+  --surface-inset: #EAF3EE;
+  --surface-hover: #E3F1EF;
+  --border: #D1E0D6;
+  --border-soft: #DEE9E0;
+  --border-strong: #B9D0C3;
+  --text: #26363D;
+  --text-secondary: #50636B;
+  --text-muted: #74858B;
+  --accent: #21675D;
+  --accent-hover: #18594F;
   --button-bg: #21675D;
   --button-hover: #28766B;
   --button-text: #F6FFFC;
-  --risk-low: #67D2A3;
-  --risk-moderate: #E9C768;
-  --risk-high: #F1A15B;
-  --risk-very-high: #F08085;
-  --status-detected: #F3A3AC;
-  --status-no-ckd: #42B989;
+  --risk-low: #267A59;
+  --risk-moderate: #9B7217;
+  --risk-high: #B56525;
+  --risk-very-high: #B94750;
+  --status-detected: #B94750;
+  --status-no-ckd: #21835C;
   --risk-low-tint: color-mix(in srgb, var(--risk-low) 12%, var(--surface));
   --risk-moderate-tint: color-mix(in srgb, var(--risk-moderate) 12%, var(--surface));
   --risk-high-tint: color-mix(in srgb, var(--risk-high) 12%, var(--surface));
@@ -42,15 +42,20 @@
   --r:        12px;
   --r2:       18px;
   --r3:       24px;
-  --shadow: 0 16px 40px rgba(2,10,15,.24);
-  --shadow-lifted: 0 18px 38px rgba(2,10,15,.32);
-  --shadow-deep: 0 24px 56px rgba(2,10,15,.4);
+  --shadow: 0 8px 24px rgba(31,53,57,.08);
+  --shadow-lifted: 0 12px 30px rgba(31,53,57,.12);
+  --shadow-deep: 0 18px 42px rgba(31,53,57,.16);
 }
 
 html{scroll-behavior:smooth}
 body{
   font-family:var(--body);
-  background:var(--bg);
+  background:
+    radial-gradient(ellipse at 12% 8%,rgba(204,231,220,.52),transparent 35rem),
+    radial-gradient(ellipse at 86% 32%,rgba(203,229,235,.42),transparent 38rem),
+    linear-gradient(145deg,#E8F0E8 0%,#E3F1EF 52%,#EEF3E7 100%);
+  background-color:var(--bg);
+  background-attachment:fixed;
   color:var(--text);
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
